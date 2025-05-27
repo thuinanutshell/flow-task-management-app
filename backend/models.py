@@ -60,9 +60,9 @@ class Folder(db.Model):
 
 class Task(db.Model):
     name = Column(String, nullable=False, unique=True)
-    subtask = Column(MutableList.as_mutable(PickleType), default=[])
     status = Column(Boolean, nullable=False, default=False)
 
     # Many-to-one relationship with the folder table
-    folder_id: Mapped[int] = mapped_column(ForeignKey("folder.id"))
+    # Note that tasks have to belong to a folder
+    folder_id: Mapped[int] = mapped_column(ForeignKey("folder.id"), nullable=False)
     folder: Mapped["Folder"] = relationship(back_populates="tasks")

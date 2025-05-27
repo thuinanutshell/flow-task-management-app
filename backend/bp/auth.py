@@ -31,7 +31,17 @@ def register():
         )
         db.session.add(new_user)
         db.session.commit()
-        return jsonify({"message": "New user is created"}), 201
+        return (
+            jsonify(
+                {
+                    "message": "New user is created",
+                    "id": new_user.id,
+                    "username": new_user.username,
+                    "email": new_user.email,
+                }
+            ),
+            201,
+        )
 
 
 @auth_bp.route("/login", methods=["POST"])
@@ -69,7 +79,7 @@ def login():
         return jsonify({"error": "Invalid credentials"}), 401
 
 
-@auth_bp.route("/logout")
+@auth_bp.route("/logout", methods=["POST"])
 @login_required
 def logout():
     logout_user()
