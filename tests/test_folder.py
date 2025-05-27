@@ -69,7 +69,6 @@ def test_update_folder_success(client, auth):
     assert data["name"] == "CS156"
     assert data["description"] == "Machine Learning Finding Patterns in Data"
 
-
 def test_delete_folder_success(client, auth):
     """Test successful folder creation"""
     auth.register()
