@@ -22,8 +22,8 @@ def create_folder():
         db.session.commit()
         return (
             jsonify(
-                {"message": "New folder created"},
                 {
+                    "message": "New folder created",
                     "id": folder.id,
                     "folder": folder.name,
                     "description": getattr(folder, "description", None),
@@ -36,12 +36,13 @@ def create_folder():
 @folder_bp.route("/read/<int:folder_id>", methods=["GET"])
 @login_required
 def read_folder(folder_id):
-    folder = Folder.query.get(folder_id)
+    folder = db.session.get(Folder, folder_id)
     if not folder:
         return jsonify({"error": "Folder not found"}), 404
     return (
         jsonify(
             {
+                "message": f"Folder {folder.id} is successfully retrieved",
                 "id": folder.id,
                 "name": folder.name,
                 "description": getattr(folder, "description", None),
@@ -59,7 +60,7 @@ def update_folder(folder_id):
     if not data:
         return jsonify({"error": "No input data provided"}), 400
 
-    folder = Folder.query.get(folder_id)
+    folder = db.session.get(Folder, folder_id)
     if not folder:
         return jsonify({"error": "Folder not found"}), 404
 
@@ -74,8 +75,8 @@ def update_folder(folder_id):
     db.session.commit()
     return (
         jsonify(
-            {"message": "Folder updated successfully"},
             {
+                "message": f"Folder {folder.id} updated successfully",
                 "id": folder.id,
                 "name": folder.name,
                 "description": getattr(folder, "description", None),
@@ -89,7 +90,7 @@ def update_folder(folder_id):
 @folder_bp.route("/delete/<int:folder_id>", methods=["DELETE"])
 @login_required
 def delete_folder(folder_id):
-    folder = Folder.query.get(folder_id)
+    folder = db.session.get(Folder, folder_id)
     if not folder:
         return jsonify({"error": "Folder not found"}), 404
 
@@ -97,8 +98,11 @@ def delete_folder(folder_id):
     db.session.commit()
     return (
         jsonify(
-            {"message": "Folder deleted successfully"},
-            {"id": folder.id, "name": folder.name},
+            {
+                "message": f"Folder {folder.id} deleted successfully",
+                "id": folder.id,
+                "name": folder.name,
+            },
         ),
         200,
     )
