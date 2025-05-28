@@ -33,6 +33,26 @@ def create_folder():
         )
 
 
+@folder_bp.route("/all", methods=["GET"])
+@login_required
+def get_all_folders():
+    folders = Folder.query.filter_by(user_id=current_user.id).all()
+    if not folders:
+        return jsonify({"message": "No folders found for this user."}), 404
+
+    # Serialize folders to a list of dictionaries
+    folders_data = []
+    for folder in folders:
+        folders_data.append(
+            {
+                "id": folder.id,
+                "name": folder.name,
+                "description": getattr(folder, "description", None),
+            }
+        )
+    return jsonify(folders_data), 200
+
+
 @folder_bp.route("/read/<int:folder_id>", methods=["GET"])
 @login_required
 def read_folder(folder_id):

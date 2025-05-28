@@ -44,8 +44,11 @@ def register():
         )
 
 
-@auth_bp.route("/login", methods=["POST"])
+@auth_bp.route("/login", methods=["GET", "POST"])
 def login():
+    if request.method == "GET":
+        return jsonify({"message": "Please POST your credentials"}), 200
+
     # Check content type first
     if not request.is_json:
         return jsonify({"error": "Content-Type must be application/json"}), 400
