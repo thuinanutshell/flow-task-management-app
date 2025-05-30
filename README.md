@@ -9,3 +9,8 @@ Spark is a task management app that looks like a Kanban board built with Flask (
 
 ## Frontend
 - `useContext` hook is used to pass down the info of the authenticated user
+
+## Next Steps
+- I want to try JWT authentication and compare the trade-offs between session management and JWT
+- Deploy the project on Vercel (frontend) and Render (backend)
+- Maybe use another database like MySQL instead of SQLite
