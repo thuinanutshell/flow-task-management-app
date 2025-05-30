@@ -1,12 +1,12 @@
 import ExitToAppIcon from "@mui/icons-material/ExitToApp";
 import {
-    AppBar,
-    Box,
-    Button,
-    Toolbar,
-    Typography,
-    useMediaQuery,
-    useTheme,
+  AppBar,
+  Box,
+  Button,
+  Toolbar,
+  Typography,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import { useContext } from "react";
 import { Link as RouterLink, useNavigate } from "react-router-dom";
@@ -36,7 +36,7 @@ const Navbar = () => {
         style={{ justifyContent: "space-between", position: "relative" }}
       >
         {/* Left Side - App Title */}
-        <Typography variant="h6">Tasky - Task Manager</Typography>
+        <Typography variant="h6">Spark - Task Manager</Typography>
 
         {/* Center - Welcome Message */}
         {!isMobile && isLoggedIn && (

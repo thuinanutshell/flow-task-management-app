@@ -1,9 +1,8 @@
 import { styled } from "@mui/material/styles";
-import { useState } from "react";
 import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import Login from "./components/auth/Login";
 import Register from "./components/auth/Register";
-import DraggableBoard from "./components/DraggableBoard";
+import DashBoard from "./components/DashBoard";
 import Navbar from "./components/Navbar";
 import NotFoundPage from "./components/NotFoundPage";
 import ApiProvider from "./contexts/ApiProvider";
@@ -44,12 +43,6 @@ const StyledApp = styled("div")({
  * @returns {JSX.Element} The App component.
  */
 const App = () => {
-  const [data, setData] = useState({
-    tasks: {},
-    columns: {},
-    columnOrder: [],
-  });
-
   return (
     <Router>
       <ApiProvider>
@@ -59,7 +52,7 @@ const App = () => {
             <Routes>
               <Route
                 path="/"
-                element={<DraggableBoard data={data} setData={setData} />}
+                element={<DashBoard />}
               />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
