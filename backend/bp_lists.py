@@ -1,5 +1,5 @@
 from flask import jsonify, request, Blueprint
-from models import Lists, db
+from models import List, db
 from flask_login import login_required, current_user
 
 bp_list = Blueprint("list", __name__)
@@ -25,8 +25,8 @@ def get_all_lists():
     success_status = 200
     try:
         lists = (
-            Lists.query.filter_by(user_id=current_user.id)
-            .order_by(Lists.order_index)
+            List.query.filter_by(user_id=current_user.id)
+            .order_by(List.order_index)
             .all()
         )
         print(f"User {current_user.username} fetched all of their lists")
@@ -66,10 +66,10 @@ def add_list():
     try:
         list_data = request.get_json()
         user_id = current_user.id
-        new_list = Lists(
+        new_list = List(
             name=list_data["name"],
             user_id=user_id,
-            order_index=len(Lists.query.all()),
+            order_index=len(List.query.all()),
             tasks=[],
         )
         db.session.add(new_list)
@@ -111,7 +111,7 @@ def update_order():
             list_id = list["id"]
 
             list_order_index = int(list["order_index"])
-            list_to_update = Lists.query.get(list_id)
+            list_to_update = List.query.get(list_id)
             list_to_update.order_index = list_order_index
             db.session.commit()
         print(
@@ -143,7 +143,7 @@ def delete_list(list_id):
     success_status = 200
 
     try:
-        list_to_delete = Lists.query.get(list_id)
+        list_to_delete = List.query.get(list_id)
 
         # Check if list exists
         if not list_to_delete:
@@ -188,7 +188,7 @@ def update_list_name():
         list_data = request.get_json()
         list_id = list_data["id"]
         list_name = list_data["name"]
-        list_to_update = Lists.query.get(list_id)
+        list_to_update = List.query.get(list_id)
         list_to_update.name = list_name
         db.session.commit()
         print(f"User {current_user.username} updated list name in the database")

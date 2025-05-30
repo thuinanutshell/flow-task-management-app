@@ -1,10 +1,11 @@
 from flask import Flask
 from flask_cors import CORS
-from models import db, Users
-from blueprints.bp_tasks import bp_task
-from blueprints.bp_lists import bp_list
-from blueprints.bp_auth import bp_auth
+from models import db, User
+from bp_tasks import bp_task
+from bp_lists import bp_list
+from bp_auth import bp_auth
 from flask_login import LoginManager
+from flask_migrate import Migrate
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
@@ -28,10 +29,12 @@ def load_user(id):
     Returns:
         User: The user object associated with the given ID.
     """
-    return db.session.get(Users, id)
+    return db.session.get(User, id)
 
 
 db.init_app(app)
+migrate = Migrate(app, db)
+
 with app.app_context():
     db.create_all()
 
