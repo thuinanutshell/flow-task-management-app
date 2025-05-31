@@ -2,6 +2,8 @@
 
 Spark is a task management app that looks like a Kanban board built with Flask (Python) for the backend and React (JavaScript) for the frontend. It helps you organize your tasks into lists and keep track of tasks that are completed
 
+## Interface (v0.0)
+
 <img width="1218" alt="Screenshot 2025-05-31 at 10 37 41 AM" src="https://github.com/user-attachments/assets/c327d726-42c1-422b-be50-f8dc29ab09cc" />
 
 
