@@ -12,19 +12,12 @@ import { useContext } from "react";
 import { Link as RouterLink, useNavigate } from "react-router-dom";
 import { AuthContext } from "../contexts/AuthContext";
 
-/**
- * Navbar component that displays the app title, user welcome message, and authentication buttons.
- * @returns {JSX.Element} JSX element containing the Navbar component.
- */
 const Navbar = () => {
   const { username, isLoggedIn, logout } = useContext(AuthContext);
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm")); // Adjust 'sm' as needed
 
-  /**
-   * Function that handles the logout process by calling the logout function and navigating to the login page.
-   */
   const handleLogout = () => {
     logout();
     navigate("/login");
@@ -35,10 +28,7 @@ const Navbar = () => {
       <Toolbar
         style={{ justifyContent: "space-between", position: "relative" }}
       >
-        {/* Left Side - App Title */}
-        <Typography variant="h6">Spark - Task Manager</Typography>
-
-        {/* Center - Welcome Message */}
+        <Typography variant="h6">Task Management App</Typography>
         {!isMobile && isLoggedIn && (
           <Box
             sx={{
@@ -50,8 +40,6 @@ const Navbar = () => {
             <Typography variant="subtitle1">Welcome, {username}</Typography>
           </Box>
         )}
-
-        {/* Right Side - Auth Buttons */}
         <Box>
           {isLoggedIn ? (
             <Button

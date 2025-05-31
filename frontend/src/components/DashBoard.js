@@ -54,6 +54,12 @@ const Dashboard = () => {
     showAlert("List added successfully", "success");
   };
 
+  const handleListDeleted = (deletedId) => {
+    setLists(prevLists => prevLists.filter(list => list.id !== deletedId));
+    showAlert("List deleted successfully", "success");
+  };
+
+
   if (!isLoggedIn) {
     return (
       <Container>
@@ -78,6 +84,7 @@ const Dashboard = () => {
       <ListsContainer 
         lists={lists} 
         onListUpdated={fetchLists}
+        onListDeleted={handleListDeleted}
         showAlert={showAlert}
       />
 

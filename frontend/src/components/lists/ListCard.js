@@ -91,7 +91,8 @@ const ListCard = ({ list, onListUpdated, onListDeleted, showAlert }) => {
             <IconButton size="small" onClick={() => setOpenEditDialog(true)}>
               <EditIcon fontSize="small" />
             </IconButton>
-            <IconButton size="small" onClick={onListDeleted}>
+            {/* Fixed: Now calls handleDelete instead of onListDeleted */}
+            <IconButton size="small" onClick={handleDelete}>
               <DeleteIcon fontSize="small" />
             </IconButton>
           </Box>
@@ -109,7 +110,12 @@ const ListCard = ({ list, onListUpdated, onListDeleted, showAlert }) => {
               key={task.id}
               task={task}
               onTaskUpdated={handleTaskUpdated}
-              onTaskDeleted={handleDelete}
+              onTaskDeleted={(taskId) => {
+                onListUpdated({
+                  ...list,
+                  tasks: list.tasks.filter(t => t.id !== taskId)
+                });
+              }}
               showAlert={showAlert}
             />
           ))}

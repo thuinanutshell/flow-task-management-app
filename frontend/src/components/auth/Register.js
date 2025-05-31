@@ -1,8 +1,9 @@
 import {
+  Box,
   Button,
   Container,
-  Grid,
   Paper,
+  Stack,
   TextField,
   Typography,
 } from "@mui/material";
@@ -10,14 +11,7 @@ import { useState } from "react";
 import { useApi } from "../../contexts/ApiProvider";
 import AlertMessage from "./AlertMessage";
 
-/**
- * Register component for user registration.
- * @returns {JSX.Element} JSX element containing the registration form.
- */
 const Register = () => {
-  /**
-   * State variables for form data and alert message.
-   */
   const [formData, setFormData] = useState({
     username: "",
     email: "",
@@ -30,49 +24,27 @@ const Register = () => {
     message: "",
     severity: "error",
   });
-
-  /**
-   * ApiProvider context for making API requests.
-   */
   const api = useApi();
 
-  /**
-   * Event handler for input change.
-   * @param {Object} e - Event object.
-   */
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
 
-  /**
-   * Function to trigger alert message.
-   * @param {string} message - Alert message.
-   * @param {string} severity - Severity of alert message.
-   */
   const triggerAlert = (message, severity) => {
     setAlert({ key: Date.now(), open: true, message, severity });
   };
 
-  /**
-   * Event handler for closing alert message.
-   */
   const handleCloseAlert = () => {
     setAlert({ ...alert, open: false });
   };
 
-  /**
-   * Event handler for form submission.
-   * @param {Object} e - Event object.
-   */
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     if (formData.password !== formData.confirmPassword) {
       triggerAlert("Passwords do not match!", "error");
       return;
     }
-
     try {
       const response = await api.post("/register", formData);
       if (response.ok) {
@@ -84,7 +56,6 @@ const Register = () => {
           window.location.href = "/login";
         }, 800);
       } else {
-        // Adjusted for provided error object structure
         triggerAlert(response.body.message, "error");
       }
     } catch (error) {
@@ -95,76 +66,155 @@ const Register = () => {
     }
   };
 
-  /**
-   * Function to render text input field.
-   * @param {string} label - Label for input field.
-   * @param {string} name - Name of input field.
-   * @param {string} type - Type of input field.
-   * @param {boolean} autoFocus - Whether input field should be auto-focused.
-   * @returns {JSX.Element} JSX element containing the text input field.
-   */
-  const renderTextField = (label, name, type = "text", autoFocus = false) => (
-    <Grid item xs={12}>
-      <TextField
-        variant="outlined"
-        required
-        fullWidth
-        id={name}
-        label={label}
-        name={name}
-        type={type}
-        value={formData[name]}
-        onChange={handleChange}
-        autoFocus={autoFocus}
-      />
-    </Grid>
-  );
-
   return (
     <Container component="main" maxWidth="xs">
-      <Paper
-        elevation={3}
-        style={{
-          padding: "20px",
+      <Box
+        sx={{
           display: "flex",
-          flexDirection: "column",
           alignItems: "center",
+          justifyContent: "center",
+          py: 3,
         }}
       >
-        <Typography component="h1" variant="h5">
-          Register
-        </Typography>
-        <form
-          onSubmit={handleSubmit}
-          style={{ width: "100%", marginTop: "20px" }}
+        <Paper
+          elevation={3}
+          sx={{
+            p: 4,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            width: "100%",
+            maxWidth: 400,
+          }}
         >
-          <Grid container spacing={2}>
-            {renderTextField("Username", "username", "text", true)}
-            {renderTextField("Email Address", "email")}
-            {renderTextField("Password", "password", "password")}
-            {renderTextField("Confirm Password", "confirmPassword", "password")}
-          </Grid>
-          <Button
-            type="submit"
-            fullWidth
-            variant="contained"
-            color="primary"
-            style={{ marginTop: "20px" }}
-          >
-            Register
-          </Button>
-        </form>
-        {alert.open && (
-          <AlertMessage
-            key={alert.key}
-            open={alert.open}
-            message={alert.message}
-            severity={alert.severity}
-            onClose={handleCloseAlert}
-            style={{ width: "100%", marginTop: "20px" }}
-          />
-        )}
-      </Paper>
+          <Typography component="h1" variant="h5" sx={{ mb: 3, fontWeight: 500 }}>
+            Create New Account
+          </Typography>
+          
+          <Box component="form" onSubmit={handleSubmit} sx={{ width: "100%" }}>
+            <Stack spacing={2.5}>
+              <TextField
+                variant="outlined"
+                required
+                fullWidth
+                id="username"
+                label="Username"
+                name="username"
+                type="text"
+                value={formData.username}
+                onChange={handleChange}
+                autoFocus
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    "& fieldset": {
+                      borderColor: "rgba(0, 0, 0, 0.23)",
+                    },
+                    "&:hover fieldset": {
+                      borderColor: "primary.main",
+                    },
+                  },
+                }}
+              />
+              
+              <TextField
+                variant="outlined"
+                required
+                fullWidth
+                id="email"
+                label="Email"
+                name="email"
+                type="email"
+                value={formData.email}
+                onChange={handleChange}
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    "& fieldset": {
+                      borderColor: "rgba(0, 0, 0, 0.23)",
+                    },
+                    "&:hover fieldset": {
+                      borderColor: "primary.main",
+                    },
+                  },
+                }}
+              />
+              
+              <TextField
+                variant="outlined"
+                required
+                fullWidth
+                id="password"
+                label="Password"
+                name="password"
+                type="password"
+                value={formData.password}
+                onChange={handleChange}
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    "& fieldset": {
+                      borderColor: "rgba(0, 0, 0, 0.23)",
+                    },
+                    "&:hover fieldset": {
+                      borderColor: "primary.main",
+                    },
+                  },
+                }}
+              />
+              
+              <TextField
+                variant="outlined"
+                required
+                fullWidth
+                id="confirmPassword"
+                label="Confirm Password"
+                name="confirmPassword"
+                type="password"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    "& fieldset": {
+                      borderColor: "rgba(0, 0, 0, 0.23)",
+                    },
+                    "&:hover fieldset": {
+                      borderColor: "primary.main",
+                    },
+                  },
+                }}
+              />
+            </Stack>
+            
+            <Button
+              type="submit"
+              fullWidth
+              variant="contained"
+              color="primary"
+              size="large"
+              sx={{
+                mt: 3,
+                py: 1.5,
+                fontSize: "1rem",
+                fontWeight: 500,
+                textTransform: "uppercase",
+                letterSpacing: "0.5px",
+              }}
+            >
+              Register
+            </Button>
+          </Box>
+          
+          {alert.open && (
+            <Box sx={{ width: "100%", mt: 2 }}>
+              <AlertMessage
+                key={alert.key}
+                open={alert.open}
+                message={alert.message}
+                severity={alert.severity}
+                onClose={handleCloseAlert}
+              />
+            </Box>
+          )}
+        </Paper>
+      </Box>
     </Container>
   );
 };
