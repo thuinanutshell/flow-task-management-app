@@ -22,7 +22,8 @@ Spark is a task management app that looks like a Kanban board built with Flask (
 
 ## Further Questions
 - How do apps like Trello scale their task management system? How to write production-ready code for such an application?
-- 
+- As a user, what do I think is a great task management tool?
+
 ## Next Steps
 - Write tests for the backend using `pytest`
 - I want to try JWT authentication and compare the trade-offs between session management and JWT
