@@ -2,12 +2,16 @@
 
 Spark is a task management app that looks like a Kanban board built with Flask (Python) for the backend and React (JavaScript) for the frontend. It helps you organize your tasks into lists and keep track of tasks that are completed
 
+<img width="1218" alt="Screenshot 2025-05-31 at 10 37 41 AM" src="https://github.com/user-attachments/assets/c327d726-42c1-422b-be50-f8dc29ab09cc" />
+
+
 ## Backend
 - SQLite is used for the database, with migrations set up to update any schema changes (Flask-Migrate)
 - Session management is used for authentication (Flask-Login)
 - REST APIs are used to facilitate communication between the backend and the frontend
 
 ## Frontend
+- Material-UI for reusable components
 - `useContext` hook is used to pass down the info of the authenticated user
 
 ## Bugs Documentation & What I've Tried to Fix Them (Ongoing)
