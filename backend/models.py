@@ -6,11 +6,24 @@ db = SQLAlchemy()
 
 
 class User(db.Model, UserMixin):
+    """Table to store user's personal information
+
+    Args:
+        db: an instance of the SQLAlchemy class that provides ORM capabilities and database session management
+        UserMixin: a class that provides default implementations for authentication methods such as
+                   is_active(), is_authenticated(), is_anonymous(), get_id()
+
+    Attributes:
+        id (integer): user's unique id
+        username (string): lowercase usernamae
+        email (string): user's email (has to have a valid form)
+    """
+
     __tablename__ = "users"
 
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(100), nullable=False, unique=True)
-    email = db.Column(db.String(320), nullable=False, unique=True)
+    email = db.Column(db.String(255), nullable=False, unique=True)
     password_hash = db.Column(db.String(255), nullable=False)
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     updated_at = db.Column(
@@ -37,6 +50,18 @@ class User(db.Model, UserMixin):
 
 
 class List(db.Model):
+    """Table to store user's lists
+
+    Args:
+        db: an instance of the SQLAlchemy class that provides ORM capabilities and database session management
+
+    Attributes:
+        id (integer): the list's unique id
+        name (string): list's name
+        user_id (integer): foreign key that connects the folder with the user table
+        order_index (integer): the order of the list
+    """
+
     __tablename__ = "lists"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -44,7 +69,6 @@ class List(db.Model):
 
     # Many-to-one relationship with the User model (many lists belong to a user)
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
-    order_index = db.Column(db.Integer, nullable=False, default=0)
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     updated_at = db.Column(
         db.DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow
@@ -61,13 +85,9 @@ class List(db.Model):
         return {
             "id": self.id,
             "name": self.name,
-            "order_index": self.order_index,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
-            "tasks": [
-                task.to_dict()
-                for task in sorted(active_tasks, key=lambda x: x.order_index)
-            ],
+            "tasks": [task.to_dict() for task in sorted(active_tasks)],
         }
 
     def __repr__(self):
@@ -76,6 +96,17 @@ class List(db.Model):
 
 
 class Task(db.Model):
+    """Table to store the folder's cards information
+
+    Args:
+        db: an instance of the SQLAlchemy class that provides ORM capabilities and database session management
+
+    Attributes:
+        id (integer): the task's unique id
+        name (string): task's name
+        description (string): description of the task
+    """
+
     __tablename__ = "tasks"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -89,7 +120,6 @@ class Task(db.Model):
     updated_at = db.Column(
         db.DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow
     )
-    order_index = db.Column(db.Integer, nullable=False, default=0)
     deleted_at = db.Column(db.DateTime)
     completed_at = db.Column(db.DateTime, nullable=True)
 
@@ -103,7 +133,6 @@ class Task(db.Model):
             "description": self.description,
             "list_id": self.list_id,
             "is_completed": self.is_completed,
-            "order_index": self.order_index,
             "deleted_at": self.deleted_at.isoformat() if self.deleted_at else None,
             "completed_at": (
                 self.completed_at.isoformat() if self.completed_at else None
