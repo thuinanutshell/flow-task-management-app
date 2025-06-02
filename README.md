@@ -8,9 +8,11 @@ Spark is a task management app that looks like a Kanban board built with Flask (
 
 
 ## Backend
+### Database Design
 - SQLite is used for the database, with migrations set up to update any schema changes (Flask-Migrate)
 - Session management is used for authentication (Flask-Login)
 - REST APIs are used to facilitate communication between the backend and the frontend
+### APIs
 
 ## Frontend
 - Material-UI for reusable components
