@@ -5,32 +5,42 @@ from datetime import datetime
 db = SQLAlchemy()
 
 
-class User(db.Model, UserMixin):
-    """Table to store user's personal information
+class Base(db.Model):
+    """A custome base that defines the shared attributes among tables.
+    The line __abstract__ = True ensures that SQLAlchemy does not try to create a table for the Base class itself.
+    It's meant to be inherited from, not instantiated directly in the database.
+    The attributes include created_at, updated_at, and deleted_at.
+    """
 
-    Args:
-        db: an instance of the SQLAlchemy class that provides ORM capabilities and database session management
-        UserMixin: a class that provides default implementations for authentication methods such as
-                   is_active(), is_authenticated(), is_anonymous(), get_id()
+    __abstract__ = True
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    updated_at = db.Column(
+        db.DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow
+    )
+    deleted_at = db.Column(db.DateTime, nullable=True)
+
+    def soft_delete(self):
+        """Mark the record as deleted by setting deleted_at timestamp."""
+        self.deleted_at = datetime.utcnow()
+
+
+class User(db.Model, UserMixin):
+    """Table to store user's personal information.
 
     Attributes:
         id (integer): user's unique id
-        username (string): lowercase usernamae
+        username (string): lowercase username
         email (string): user's email (has to have a valid form)
+        lists: one-to-many relationship with the List model (one user can have multiple lists)
     """
 
     __tablename__ = "users"
 
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(100), nullable=False, unique=True)
-    email = db.Column(db.String(255), nullable=False, unique=True)
+    username = db.Column(db.String(100), nullable=False, unique=True, index=True)
+    email = db.Column(db.String(255), nullable=False, unique=True, index=True)
     password_hash = db.Column(db.String(255), nullable=False)
-    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-    updated_at = db.Column(
-        db.DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow
-    )
 
-    # One-to-many relationship with the List table (one user can have multiple lists)
     lists = db.relationship(
         "List", backref="user", lazy=True, cascade="all, delete-orphan"
     )
@@ -43,8 +53,6 @@ class User(db.Model, UserMixin):
             "id": self.id,
             "username": self.username,
             "email": self.email,
-            "created_at": self.created_at.isoformat() if self.created_at else None,
-            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
             "lists": [list_item.to_dict() for list_item in self.lists],
         }
 
@@ -52,14 +60,12 @@ class User(db.Model, UserMixin):
 class List(db.Model):
     """Table to store user's lists
 
-    Args:
-        db: an instance of the SQLAlchemy class that provides ORM capabilities and database session management
-
     Attributes:
         id (integer): the list's unique id
         name (string): list's name
-        user_id (integer): foreign key that connects the folder with the user table
-        order_index (integer): the order of the list
+        user_id (integer): A foreign key that connects the list with the user table
+                           This demonstrates the many-to-one relationship with the User model (many lists belong to a user)
+        tasks (list): One-to-many relationship with the Task model, one list can have multiple tasks
     """
 
     __tablename__ = "lists"
@@ -67,61 +73,47 @@ class List(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(200), nullable=False)
 
-    # Many-to-one relationship with the User model (many lists belong to a user)
-    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
-    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-    updated_at = db.Column(
-        db.DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow
+    user_id = db.Column(
+        db.Integer, db.ForeignKey("users.id"), nullable=False, index=True
     )
-
-    # One-to-many relationship with the Task model (one list can have many tasks)
     tasks = db.relationship(
         "Task", backref="list", lazy=True, cascade="all, delete-orphan"
     )
 
     def to_dict(self):
-        active_tasks = [task for task in self.tasks if not task.deleted_at]
-
+        active_tasks = [task for task in self.tasks]
         return {
             "id": self.id,
             "name": self.name,
-            "created_at": self.created_at.isoformat() if self.created_at else None,
-            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
-            "tasks": [task.to_dict() for task in sorted(active_tasks)],
+            "tasks": [task.to_dict() for task in active_tasks],
         }
 
     def __repr__(self):
-        active_tasks = [task for task in self.tasks if not task.deleted_at]
-        return f"List('{self.name}', order_idx: {self.order_index}, tasks: {len(active_tasks)})"
+        active_tasks = [task for task in self.tasks]
+        return f"List('{self.name}', tasks: {len(active_tasks)})"
 
 
 class Task(db.Model):
-    """Table to store the folder's cards information
-
-    Args:
-        db: an instance of the SQLAlchemy class that provides ORM capabilities and database session management
+    """Table to store the list's tasks information
 
     Attributes:
         id (integer): the task's unique id
         name (string): task's name
         description (string): description of the task
+        is_completed (boolean): task completion status
+        list_id (integer): Many-to-one relationship with the List model. Many tasks belong to a list
     """
 
     __tablename__ = "tasks"
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(500), nullable=False)
-    description = db.Column(db.Text)
-
-    # Many-to-one relationship with the List model
-    list_id = db.Column(db.Integer, db.ForeignKey("lists.id"), nullable=False)
+    description = db.Column(db.Text, nullable=True)
     is_completed = db.Column(db.Boolean, nullable=False, default=False)
-    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-    updated_at = db.Column(
-        db.DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow
+
+    list_id = db.Column(
+        db.Integer, db.ForeignKey("lists.id"), nullable=False, index=True
     )
-    deleted_at = db.Column(db.DateTime)
-    completed_at = db.Column(db.DateTime, nullable=True)
 
     def __repr__(self):
         return f"Task('{self.name}', list_id: {self.list_id})"
@@ -133,15 +125,7 @@ class Task(db.Model):
             "description": self.description,
             "list_id": self.list_id,
             "is_completed": self.is_completed,
-            "deleted_at": self.deleted_at.isoformat() if self.deleted_at else None,
-            "completed_at": (
-                self.completed_at.isoformat() if self.completed_at else None
-            ),
         }
-
-    def soft_delete(self):
-        self.deleted_at = datetime.utcnow()
 
     def mark_completed(self):
         self.is_completed = True
-        self.completed_at = datetime.utcnow()

@@ -13,7 +13,7 @@ const AddListDialog = ({ open, onClose, onListAdded, showAlert }) => {
     }
 
     try {
-      const response = await api.post("/add_list", { name });
+      const response = await api.post("/lists/", { name });
       if (response.ok) {
         onListAdded(response.body.list);
         setName("");

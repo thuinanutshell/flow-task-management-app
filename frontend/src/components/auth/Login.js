@@ -52,7 +52,7 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await api.post("/login", formData);
+      const response = await api.post("/auth/login", formData);
       if (response.ok) {
         login(response.body.username);
         triggerAlert(

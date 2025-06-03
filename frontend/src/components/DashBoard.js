@@ -25,7 +25,7 @@ const Dashboard = () => {
 
   const fetchLists = async () => {
     try {
-      const response = await api.get("/lists");
+      const response = await api.get("/lists/"); //trailing slash is very important here!
       if (response.ok) {
         setLists(response.body.lists);
       } else {

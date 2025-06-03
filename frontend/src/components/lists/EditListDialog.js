@@ -19,7 +19,7 @@ const EditListDialog = ({ open, onClose, list, onListUpdated, showAlert }) => {
     }
 
     try {
-      const response = await api.patch("/update_list_name", {
+      const response = await api.patch("/lists/", {
         id: list.id,
         name
       });
