@@ -59,7 +59,7 @@ const ListCard = ({ list, onListUpdated, onListDeleted, showAlert }) => {
     try {
       const response = await api.delete(`/lists/${list.id}`);
       if (response.ok) {
-        onListDeleted(); // This should trigger the parent's deletion handler
+        onListDeleted();
         showAlert("List deleted successfully", "success");
       } else {
         showAlert(response.body.message || "Failed to delete list", "error");
@@ -71,13 +71,12 @@ const ListCard = ({ list, onListUpdated, onListDeleted, showAlert }) => {
 
   return (
     <Card sx={{ 
-      minWidth: 300, 
-      maxWidth: 300,
-      height: '100%',
+      minWidth: 350, 
+      maxWidth: 350,
       display: 'flex',
       flexDirection: 'column'
     }}>
-      <CardContent sx={{ flexGrow: 1 }}>
+      <CardContent sx={{ flexGrow: 1, pb: 1 }}>
         <Box sx={{ 
           display: 'flex', 
           justifyContent: 'space-between',
@@ -91,7 +90,6 @@ const ListCard = ({ list, onListUpdated, onListDeleted, showAlert }) => {
             <IconButton size="small" onClick={() => setOpenEditDialog(true)}>
               <EditIcon fontSize="small" />
             </IconButton>
-            {/* Fixed: Now calls handleDelete instead of onListDeleted */}
             <IconButton size="small" onClick={handleDelete}>
               <DeleteIcon fontSize="small" />
             </IconButton>

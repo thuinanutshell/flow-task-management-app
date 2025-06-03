@@ -81,16 +81,16 @@ class List(db.Model):
     )
 
     def to_dict(self):
-        active_tasks = [task for task in self.tasks]
+        tasks = [task for task in self.tasks]
         return {
             "id": self.id,
             "name": self.name,
-            "tasks": [task.to_dict() for task in active_tasks],
+            "tasks": [task.to_dict() for task in tasks],
         }
 
     def __repr__(self):
-        active_tasks = [task for task in self.tasks]
-        return f"List('{self.name}', tasks: {len(active_tasks)})"
+        tasks = [task for task in self.tasks]
+        return f"List('{self.name}', tasks: {len(tasks)})"
 
 
 class Task(db.Model):
@@ -99,7 +99,6 @@ class Task(db.Model):
     Attributes:
         id (integer): the task's unique id
         name (string): task's name
-        description (string): description of the task
         is_completed (boolean): task completion status
         list_id (integer): Many-to-one relationship with the List model. Many tasks belong to a list
     """
@@ -108,7 +107,6 @@ class Task(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(500), nullable=False)
-    description = db.Column(db.Text, nullable=True)
     is_completed = db.Column(db.Boolean, nullable=False, default=False)
 
     list_id = db.Column(
@@ -122,7 +120,6 @@ class Task(db.Model):
         return {
             "id": self.id,
             "name": self.name,
-            "description": self.description,
             "list_id": self.list_id,
             "is_completed": self.is_completed,
         }

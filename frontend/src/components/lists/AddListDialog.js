@@ -27,7 +27,7 @@ const AddListDialog = ({ open, onClose, onListAdded, showAlert }) => {
   };
 
   return (
-    <Dialog open={open} onClose={onClose}>
+    <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
       <DialogTitle>Create New List</DialogTitle>
       <DialogContent>
         <TextField

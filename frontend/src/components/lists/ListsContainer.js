@@ -7,7 +7,7 @@ const ListsContainer = ({ lists, onListUpdated, onListAdded, onListDeleted, show
     <Box sx={{ p: 2 }}>
       <Grid container spacing={3}>
         {lists.map((list) => (
-          <Grid item xs={12} sm={6} md={4} lg={3} key={list.id}>
+          <Grid item xs={12} sm={6} md={4} lg={4} key={list.id}>
             <Box sx={{ height: '100%' }}>
               <ListCard
                 list={list}
@@ -20,7 +20,7 @@ const ListsContainer = ({ lists, onListUpdated, onListAdded, onListDeleted, show
         ))}
         
         {/* Add List Dialog Trigger */}
-        <Grid item xs={12} sm={6} md={4} lg={3}>
+        <Grid item xs={12} sm={6} md={4} lg={4}>
           <Box sx={{ height: '100%', minHeight: 300 }}>
             <AddListDialog 
               onListAdded={onListAdded}
