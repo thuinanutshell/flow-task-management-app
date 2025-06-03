@@ -41,11 +41,6 @@ https://github.com/user-attachments/assets/2016bf4b-add3-4b31-9107-c2ec740aa3ef
 ## Frontend
 - Material-UI for reusable components
 - `useContext` hook is used to pass down the info of the authenticated user
-### Interface (v0.0)
-
-<img width="1218" alt="Screenshot 2025-05-31 at 10 37 41 AM" src="https://github.com/user-attachments/assets/c327d726-42c1-422b-be50-f8dc29ab09cc" />
-
-### Interface (v0.1)
 <img width="1216" alt="Screenshot 2025-06-03 at 2 39 44 PM" src="https://github.com/user-attachments/assets/b8595631-baf2-49e3-86d5-92a2b94ea825" />
 
 
@@ -82,7 +77,11 @@ https://github.com/user-attachments/assets/2016bf4b-add3-4b31-9107-c2ec740aa3ef
 - As a user, what do I think is a great task management tool?
 
 ## Next Steps
-- [ ] Write tests for the backend using `pytest`
-- [ ] Try JWT authentication and compare the trade-offs between session management and JWT
+- [ ] Write comprehensive test suites for the backend using `pytest`
+- [ ] Employ JWT authentication and compare the trade-offs between session management and JWT
+- [ ] Add a new feature for creating subtasks that belong to a parent task
+- [ ] Add a  grid tracking for reflection of the feats of the day
+- [ ] Add a weekly summary of tasks that have been done
+- [ ] Add a drag and drop feature for tasks
+- [ ] Improve the interface that I like instead of just using the built-in design of Material UI components
 - [ ] Deploy the project on Vercel (frontend) and Render (backend)
-- [ ] Experiment with another database like MySQL instead of SQLite
