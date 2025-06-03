@@ -16,7 +16,7 @@ const Navbar = () => {
   const { username, isLoggedIn, logout } = useContext(AuthContext);
   const navigate = useNavigate();
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm")); // Adjust 'sm' as needed
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   const handleLogout = () => {
     logout();

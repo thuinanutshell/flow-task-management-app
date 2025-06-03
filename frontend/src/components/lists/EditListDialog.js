@@ -25,6 +25,7 @@ const EditListDialog = ({ open, onClose, list, onListUpdated, showAlert }) => {
       });
       if (response.ok) {
         onListUpdated();
+        onClose();
       } else {
         showAlert(response.body.message || "Failed to update list", "error");
       }
@@ -34,7 +35,7 @@ const EditListDialog = ({ open, onClose, list, onListUpdated, showAlert }) => {
   };
 
   return (
-    <Dialog open={open} onClose={onClose}>
+    <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
       <DialogTitle>Edit List</DialogTitle>
       <DialogContent>
         <TextField

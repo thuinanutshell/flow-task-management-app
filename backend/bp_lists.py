@@ -123,9 +123,9 @@ def delete_list(list_id):
 
 
 # Update list name in the database
-@bp_list.route("/<int:list_id>", methods=["PATCH"])
+@bp_list.route("/", methods=["PATCH"])
 @login_required
-def update_list_name(list_id):
+def update_list_name():
     """
     Updates the name of a list in the database.
 

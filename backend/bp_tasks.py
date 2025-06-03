@@ -23,7 +23,6 @@ def add_task():
         list_id = task_data.get("list_id")
         new_task = Task(
             name=task_data.get("name"),
-            description=task_data.get("description", ""),
             list_id=list_id,
             is_completed=False,
         )
