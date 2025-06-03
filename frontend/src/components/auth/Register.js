@@ -46,7 +46,7 @@ const Register = () => {
       return;
     }
     try {
-      const response = await api.post("/register", formData);
+      const response = await api.post("/auth/register", formData);
       if (response.ok) {
         triggerAlert(
           "Registration successful! Redirecting you to the login page.",

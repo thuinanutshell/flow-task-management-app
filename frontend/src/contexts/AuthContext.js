@@ -36,7 +36,7 @@ export const AuthProvider = ({ children }) => {
    */
   const logout = async () => {
     try {
-      const response = await api.post("/logout"); // Send a POST request to the backend using the api object
+      const response = await api.post("/auth/logout"); // Send a POST request to the backend using the api object
       if (response.ok) {
         console.log("Logged out successfully.");
       }

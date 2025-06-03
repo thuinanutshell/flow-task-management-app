@@ -28,7 +28,7 @@ const ListCard = ({ list, onListUpdated, onListDeleted, showAlert }) => {
     }
 
     try {
-      const response = await api.post("/add_task", {
+      const response = await api.post("/tasks/", {
         name: newTaskName,
         list_id: list.id
       });
@@ -57,7 +57,7 @@ const ListCard = ({ list, onListUpdated, onListDeleted, showAlert }) => {
 
   const handleDelete = async () => {
     try {
-      const response = await api.delete(`/delete_list/${list.id}`);
+      const response = await api.delete(`/lists/${list.id}`);
       if (response.ok) {
         onListDeleted(); // This should trigger the parent's deletion handler
         showAlert("List deleted successfully", "success");

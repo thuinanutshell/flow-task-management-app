@@ -1,9 +1,9 @@
 import DeleteIcon from '@mui/icons-material/Delete';
 import {
-    Box,
-    Checkbox,
-    IconButton,
-    Typography
+  Box,
+  Checkbox,
+  IconButton,
+  Typography
 } from "@mui/material";
 import { useApi } from "../../contexts/ApiProvider";
 
@@ -12,8 +12,9 @@ const TaskCard = ({ task, onTaskUpdated, onTaskDeleted, showAlert }) => {
 
   const handleComplete = async () => {
     try {
-      const response = await api.patch(`/tasks/${task.id}/update`, {
-        is_completed: !task.is_completed
+      const response = await api.patch(`/tasks/${task.id}`, {
+        is_completed: !task.is_completed,
+        name: task.name
       });
       
       if (response.ok) {
@@ -28,7 +29,7 @@ const TaskCard = ({ task, onTaskUpdated, onTaskDeleted, showAlert }) => {
 
   const handleDelete = async () => {
     try {
-      const response = await api.delete(`/tasks/${task.id}/delete`);
+      const response = await api.delete(`/tasks/${task.id}`);
       if (response.ok) {
         onTaskDeleted(task.id);
       } else {

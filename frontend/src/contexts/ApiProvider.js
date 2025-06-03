@@ -1,5 +1,5 @@
 import { createContext, useContext } from "react";
-import TodoApiClient from "../ApiClient.js";
+import TaskApiClient from "../ApiClient.js";
 
 const ApiContext = createContext();
 
@@ -10,7 +10,7 @@ const ApiContext = createContext();
  * @returns {JSX.Element} - The API context provider component.
  */
 export default function ApiProvider({ children }) {
-  const api = new TodoApiClient();
+  const api = new TaskApiClient();
 
   return <ApiContext.Provider value={api}>{children}</ApiContext.Provider>;
 }

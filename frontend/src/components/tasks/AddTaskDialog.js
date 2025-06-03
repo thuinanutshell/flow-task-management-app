@@ -14,9 +14,8 @@ const AddTaskDialog = ({ open, onClose, listId, onTaskAdded, showAlert }) => {
     }
 
     try {
-      const response = await api.post("/add_task", {
+      const response = await api.post("/tasks/", {
         name,
-        description,
         list_id: listId
       });
       
