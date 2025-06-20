@@ -44,8 +44,16 @@ def create_app(config_name="default"):
 
     # Register blueprints
     from app.api.auth import auth_bp, check_if_token_is_revoked
+    from app.api.projects import project_bp
+    from app.api.lists import list_bp
+    from app.api.categories import category_bp
+    from app.api.tasks import task_bp
 
     app.register_blueprint(auth_bp, url_prefix="/auth")
+    app.register_blueprint(project_bp, url_prefix="/project")
+    app.register_blueprint(list_bp, url_prefix="/list")
+    app.register_blueprint(category_bp, url_prefix="/categories")
+    app.register_blueprint(task_bp, url_prefix="/task")
 
     # Configure JWT token blocklist
     jwt.token_in_blocklist_loader(check_if_token_is_revoked)
