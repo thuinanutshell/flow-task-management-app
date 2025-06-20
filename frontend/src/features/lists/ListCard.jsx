@@ -1,5 +1,6 @@
 import {
     ActionIcon,
+    Badge,
     Box,
     Group,
     Menu,
@@ -11,10 +12,13 @@ import {
 import {
     IconDots,
     IconEdit,
+    IconExternalLink,
     IconPlus,
-    IconTrash
+    IconTrash,
+    IconX
 } from '@tabler/icons-react'
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { listService } from '../../services/lists'
 import TaskCardCompact from '../tasks/TaskCardCompact'
 
@@ -22,8 +26,11 @@ const ListCard = ({
   list, 
   onAddTask,
   onEdit, 
-  onDelete
+  onDelete,
+  onRemoveFromWorkspace,
+  isWorkspaceList = false
 }) => {
+  const navigate = useNavigate()
   const [tasks, setTasks] = useState([])
   const [loading, setLoading] = useState(false)
   
@@ -57,6 +64,31 @@ const ListCard = ({
     }
   }
 
+  const handleViewInProject = () => {
+    if (list.project_id || list.originalProjectId) {
+      const projectId = list.project_id || list.originalProjectId
+      navigate(`/projects/${projectId}`)
+    }
+  }
+
+  const handleEdit = () => {
+    if (onEdit) {
+      onEdit(list)
+    }
+  }
+
+  const handleDelete = () => {
+    if (onDelete) {
+      onDelete(list)
+    }
+  }
+
+  const handleRemoveFromWorkspace = () => {
+    if (onRemoveFromWorkspace) {
+      onRemoveFromWorkspace(list)
+    }
+  }
+
   return (
     <Paper 
       shadow="sm" 
@@ -66,7 +98,8 @@ const ListCard = ({
         height: '600px',
         display: 'flex',
         flexDirection: 'column',
-        backgroundColor: '#f8f9fa'
+        backgroundColor: isWorkspaceList ? '#f0f8ff' : '#f8f9fa',
+        border: isWorkspaceList ? '2px solid #e3f2fd' : '1px solid #dee2e6'
       }}
     >
       {/* List Header */}
@@ -76,12 +109,26 @@ const ListCard = ({
         p="md"
         style={{ borderBottom: '1px solid #dee2e6' }}
       >
-        {/* Progress Ring + List Name */}
-        <Group spacing="sm" style={{ flex: 1 }}>
-          <Text fw={600} size="md" lineClamp={1}>
-            {list.name}
-          </Text>
-        </Group>
+        {/* List Name and Type Indicator */}
+        <Stack spacing={4} style={{ flex: 1 }}>
+          <Group spacing="xs" align="center">
+            <Text fw={600} size="md" lineClamp={1}>
+              {list.name}
+            </Text>
+            {isWorkspaceList && (
+              <Badge size="xs" color="blue" variant="light">
+                Workspace
+              </Badge>
+            )}
+          </Group>
+          
+          {/* Project Information for Workspace Lists */}
+          {isWorkspaceList && (list.project_name || list.originalProjectName) && (
+            <Text size="xs" c="dimmed" lineClamp={1}>
+              From: {list.project_name || list.originalProjectName}
+            </Text>
+          )}
+        </Stack>
 
         {/* Action Buttons */}
         <Group spacing="xs">
@@ -94,7 +141,7 @@ const ListCard = ({
             <IconPlus size={16} />
           </ActionIcon>
           
-          <Menu shadow="md" width={180}>
+          <Menu shadow="md" width={200}>
             <Menu.Target>
               <ActionIcon 
                 variant="subtle" 
@@ -105,20 +152,43 @@ const ListCard = ({
             </Menu.Target>
 
             <Menu.Dropdown>
-              {onEdit && (
+              {/* View in Project - Only for workspace lists */}
+              {isWorkspaceList && (list.project_id || list.originalProjectId) && (
+                <Menu.Item 
+                  leftSection={<IconExternalLink size={14} />}
+                  onClick={handleViewInProject}
+                >
+                  View in Project
+                </Menu.Item>
+              )}
+              
+              {/* Edit List - Only for created lists */}
+              {!isWorkspaceList && onEdit && (
                 <Menu.Item 
                   leftSection={<IconEdit size={14} />}
-                  onClick={() => onEdit(list)}
+                  onClick={handleEdit}
                 >
                   Edit List
                 </Menu.Item>
               )}
               
-              {onDelete && (
+              {/* Remove from Workspace - Only for workspace lists */}
+              {isWorkspaceList && onRemoveFromWorkspace && (
+                <Menu.Item 
+                  leftSection={<IconX size={14} />}
+                  color="orange"
+                  onClick={handleRemoveFromWorkspace}
+                >
+                  Remove from Workspace
+                </Menu.Item>
+              )}
+              
+              {/* Delete List - Only for created lists */}
+              {!isWorkspaceList && onDelete && (
                 <Menu.Item 
                   leftSection={<IconTrash size={14} />}
                   color="red"
-                  onClick={() => onDelete(list)}
+                  onClick={handleDelete}
                 >
                   Delete List
                 </Menu.Item>
@@ -163,6 +233,31 @@ const ListCard = ({
           )}
         </Stack>
       </ScrollArea>
+
+      {/* List Stats Footer */}
+      <Box
+        p="sm"
+        style={{
+          borderTop: '1px solid #dee2e6',
+          backgroundColor: isWorkspaceList ? '#e3f2fd' : '#ffffff'
+        }}
+      >
+        <Group justify="space-between" align="center">
+          <Text size="xs" c="dimmed">
+            {list.completed_tasks || 0} / {list.total_tasks || 0} tasks
+          </Text>
+          <Group spacing="xs">
+            <Text size="xs" c="dimmed">
+              {progressPercentage}%
+            </Text>
+            {isWorkspaceList && (
+              <Badge size="xs" variant="dot" color="blue">
+                Synced
+              </Badge>
+            )}
+          </Group>
+        </Group>
+      </Box>
     </Paper>
   )
 }
