@@ -1,120 +1,269 @@
-// pages/Dashboard.jsx
-import { Badge } from '@/components/ui/badge'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+// pages/Dashboard.jsx - Task Management Dashboard
+import {
+    Alert,
+    Box,
+    Button,
+    Container,
+    Grid,
+    Group,
+    Loader,
+    SegmentedControl,
+    Stack,
+    Text,
+    Title
+} from '@mantine/core'
+import { IconAlertCircle, IconFolder, IconPlus } from '@tabler/icons-react'
+import { useState } from 'react'
 import { useAuth } from '../context/AuthContext'
+import CreateListModal from '../features/lists/CreateListModal'
+import ListCard from '../features/lists/ListCard'
+import AddTaskModal from '../features/tasks/AddTaskModal'
+import { useLists } from '../hooks/useLists'
+import { useTasks } from '../hooks/useTasks'
 
 const Dashboard = () => {
   const { user } = useAuth()
+  const [activeTab, setActiveTab] = useState('board')
+  const [createListModalOpen, setCreateListModalOpen] = useState(false)
+  const [addTaskModalOpen, setAddTaskModalOpen] = useState(false)
+  const [selectedList, setSelectedList] = useState(null)
+  
+  // Use the hooks
+  const { lists, loading, error, createList, deleteList } = useLists()
+  const { createTask } = useTasks()
+
+  // Get current date
+  const getCurrentDate = () => {
+    return new Date().toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    })
+  }
+
+  const handleCreateList = () => {
+    setCreateListModalOpen(true)
+  }
+
+  const handleCreateListSubmit = async (listData) => {
+    await createList(listData)
+  }
+
+  const handleGetListFromProjects = () => {
+    // TODO: Open modal to select from existing project lists
+    console.log('Get list from projects')
+  }
+
+  const handleAddTask = (list) => {
+    setSelectedList(list)
+    setAddTaskModalOpen(true)
+  }
+
+  const handleAddTaskSubmit = async (taskData) => {
+    await createTask(taskData)
+    // Refresh lists to update task counts
+    // The useLists hook will need to be updated to refresh when tasks change
+  }
+
+  const handleViewList = (list) => {
+    // TODO: Navigate to list detail page or open tasks view
+    console.log('View list:', list)
+  }
+
+  const handleEditList = (list) => {
+    // TODO: Open edit list modal
+    console.log('Edit list:', list)
+  }
+
+  const handleDeleteList = async (list) => {
+    if (window.confirm(`Are you sure you want to delete "${list.name}"? This will also delete all tasks in this list.`)) {
+      await deleteList(list.id)
+    }
+  }
+
+  // Timer handlers for tasks (placeholders for now)
+  const handleStartTimer = (task) => {
+    console.log('Start timer for task:', task)
+    // TODO: Implement timer functionality
+  }
+
+  const handlePauseTimer = (task) => {
+    console.log('Pause timer for task:', task)
+    // TODO: Implement timer functionality
+  }
+
+  const handleCompleteTask = (task) => {
+    console.log('Complete task:', task)
+    // TODO: Implement task completion with mental state and reflection
+  }
+
+  if (loading) {
+    return (
+      <Container size="xl">
+        <Stack align="center" justify="center" h={400}>
+          <Loader size="lg" />
+          <Text>Loading your dashboard...</Text>
+        </Stack>
+      </Container>
+    )
+  }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-        <p className="text-muted-foreground">
-          Welcome back, {user?.first_name}! Here's what's happening with your tasks.
-        </p>
-      </div>
+    <Container size="xl">
+      <Stack spacing="lg">
+        {/* Header */}
+        <Group justify="space-between" align="flex-start">
+          <div>
+            <Title order={1} size="h1">Dashboard</Title>
+            <Text c="dimmed" size="lg" mt="xs">
+              {getCurrentDate()}
+            </Text>
+          </div>
+        </Group>
 
-      {/* User Info Card */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Profile Information</CardTitle>
-          <CardDescription>
-            Your account details and current status
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div>
-              <dt className="text-sm font-medium text-muted-foreground">Full name</dt>
-              <dd className="mt-1 text-sm">
-                {user?.first_name} {user?.last_name}
-              </dd>
-            </div>
-            <div>
-              <dt className="text-sm font-medium text-muted-foreground">Username</dt>
-              <dd className="mt-1 text-sm">
-                <Badge variant="secondary">{user?.username}</Badge>
-              </dd>
-            </div>
-            <div>
-              <dt className="text-sm font-medium text-muted-foreground">Email</dt>
-              <dd className="mt-1 text-sm">{user?.email}</dd>
-            </div>
-            <div>
-              <dt className="text-sm font-medium text-muted-foreground">User ID</dt>
-              <dd className="mt-1 text-sm font-mono text-xs">{user?.id}</dd>
-            </div>
-          </dl>
-        </CardContent>
-      </Card>
+        {/* View Toggle */}
+        <Group justify="space-between" align="center">
+          <SegmentedControl
+            value={activeTab}
+            onChange={setActiveTab}
+            data={[
+              { label: 'Board', value: 'board' },
+              { label: 'Progress', value: 'progress' }
+            ]}
+            size="md"
+          />
 
-      {/* Stats Overview */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Projects</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">0</div>
-            <p className="text-xs text-muted-foreground">
-              No projects yet
-            </p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Tasks</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">0</div>
-            <p className="text-xs text-muted-foreground">
-              No active tasks
-            </p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Completed Today</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">0</div>
-            <p className="text-xs text-muted-foreground">
-              Great start!
-            </p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Time Focused</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">0h</div>
-            <p className="text-xs text-muted-foreground">
-              Today's focus time
-            </p>
-          </CardContent>
-        </Card>
-      </div>
+          <Group>
+            <Button
+              leftSection={<IconFolder size={16} />}
+              variant="outline"
+              onClick={handleGetListFromProjects}
+            >
+              Get List From Projects
+            </Button>
+            <Button
+              leftSection={<IconPlus size={16} />}
+              onClick={handleCreateList}
+            >
+              Add New List
+            </Button>
+          </Group>
+        </Group>
 
-      {/* Coming Soon */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Quick Actions</CardTitle>
-          <CardDescription>
-            Common tasks and shortcuts will appear here
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground">
-            Projects, lists, and tasks will be displayed here once you start creating them.
-          </p>
-        </CardContent>
-      </Card>
-    </div>
+        {/* Error Display */}
+        {error && (
+          <Alert icon={<IconAlertCircle size="1rem" />} title="Error" color="red">
+            {error}
+          </Alert>
+        )}
+
+        {/* Main Content Area */}
+        {activeTab === 'board' ? (
+          <Box>
+            {lists.length === 0 ? (
+              // Empty State
+              <Box
+                p="xl"
+                style={{
+                  textAlign: 'center',
+                  backgroundColor: '#f8f9fa',
+                  borderRadius: '12px',
+                  border: '2px dashed #dee2e6',
+                  minHeight: '400px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                  alignItems: 'center'
+                }}
+              >
+                <Stack align="center" spacing="md">
+                  <IconFolder size={48} color="#adb5bd" />
+                  <div>
+                    <Title order={3} c="dimmed">No lists yet</Title>
+                    <Text c="dimmed" mt="xs" size="sm">
+                      Get started by creating your first list or importing from projects
+                    </Text>
+                  </div>
+                  <Group mt="md">
+                    <Button
+                      leftSection={<IconFolder size={16} />}
+                      variant="outline"
+                      onClick={handleGetListFromProjects}
+                    >
+                      Get List From Projects
+                    </Button>
+                    <Button
+                      leftSection={<IconPlus size={16} />}
+                      onClick={handleCreateList}
+                    >
+                      Create New List
+                    </Button>
+                  </Group>
+                </Stack>
+              </Box>
+            ) : (
+              // Kanban-style Lists Grid
+              <Grid>
+                {lists.map((list) => (
+                  <Grid.Col key={list.id} span={{ base: 12, sm: 6, md: 4, lg: 3 }}>
+                    <ListCard 
+                      list={list}
+                      onAddTask={handleAddTask}
+                      onView={handleViewList}
+                      onEdit={handleEditList}
+                      onDelete={handleDeleteList}
+                      onClick={handleViewList}
+                    />
+                  </Grid.Col>
+                ))}
+              </Grid>
+            )}
+          </Box>
+        ) : (
+          // Progress View
+          <Box>
+            <Box
+              p="xl"
+              style={{
+                textAlign: 'center',
+                backgroundColor: '#f8f9fa',
+                borderRadius: '12px',
+                minHeight: '300px',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center'
+              }}
+            >
+              <Stack align="center" spacing="md">
+                <Title order={3} c="dimmed">Progress View</Title>
+                <Text c="dimmed" size="sm">
+                  This will show your task completion progress and analytics
+                </Text>
+              </Stack>
+            </Box>
+          </Box>
+        )}
+
+        {/* Modals */}
+        <CreateListModal
+          opened={createListModalOpen}
+          onClose={() => setCreateListModalOpen(false)}
+          onSuccess={handleCreateListSubmit}
+        />
+
+        <AddTaskModal
+          opened={addTaskModalOpen}
+          onClose={() => {
+            setAddTaskModalOpen(false)
+            setSelectedList(null)
+          }}
+          onSuccess={handleAddTaskSubmit}
+          listId={selectedList?.id}
+          listName={selectedList?.name}
+        />
+      </Stack>
+    </Container>
   )
 }
 

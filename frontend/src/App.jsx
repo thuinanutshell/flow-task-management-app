@@ -1,11 +1,15 @@
-// App.jsx
 import { Navigate, Route, BrowserRouter as Router, Routes } from 'react-router-dom'
 import { AuthProvider, useAuth } from './context/AuthContext'
 
 // Import your page components
 import Layout from './components/layout/Layout'
+import Analytics from './pages/Analytics'
+import Calendar from './pages/Calendar'
 import Dashboard from './pages/Dashboard'
+import Experiments from './pages/Experiments'
 import Login from './pages/Login'
+import Profile from './pages/Profile'
+import Projects from './pages/Projects'
 
 // Protected Route component
 const ProtectedRoute = ({ children }) => {
@@ -58,6 +62,61 @@ function AppRoutes() {
             <ProtectedRoute>
               <Layout>
                 <Dashboard />
+              </Layout>
+            </ProtectedRoute>
+          } 
+        />
+        
+        <Route 
+          path="/projects" 
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <Projects />
+              </Layout>
+            </ProtectedRoute>
+          } 
+        />
+        
+        <Route 
+          path="/calendar" 
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <Calendar />
+              </Layout>
+            </ProtectedRoute>
+          } 
+        />
+        
+        <Route 
+          path="/analytics" 
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <Analytics />
+              </Layout>
+            </ProtectedRoute>
+          } 
+        />
+        
+        <Route 
+          path="/experiments" 
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <Experiments />
+              </Layout>
+            </ProtectedRoute>
+          } 
+        />
+        
+        <Route 
+          path="/profile" 
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <Profile />
               </Layout>
             </ProtectedRoute>
           } 
