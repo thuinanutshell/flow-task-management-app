@@ -153,7 +153,6 @@ const EditTaskModal = ({
           <Textarea
             label="Description"
             placeholder="Enter task description (optional)"
-            leftSection={<IconFileText size={16} />}
             minRows={3}
             {...form.getInputProps('description')}
             disabled={submitting}

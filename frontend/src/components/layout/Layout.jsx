@@ -27,7 +27,7 @@ const Layout = ({ children }) => {
           minHeight: '100vh'
         }}
       >
-        <Box p="xl">
+        <Box p="md">
           {children}
         </Box>
       </Box>

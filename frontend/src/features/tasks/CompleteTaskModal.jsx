@@ -1,16 +1,15 @@
-// features/tasks/CompleteTaskModal.jsx
 import {
-    Button,
-    Group,
-    Modal,
-    Select,
-    Stack,
-    Text,
-    Textarea,
-    Title
+  Button,
+  Group,
+  Modal,
+  Select,
+  Stack,
+  Text,
+  Textarea,
+  Title
 } from '@mantine/core'
 import { useForm } from '@mantine/form'
-import { IconBrain, IconNotes } from '@tabler/icons-react'
+import { IconBrain } from '@tabler/icons-react'
 import { useState } from 'react'
 
 const CompleteTaskModal = ({ 
@@ -120,7 +119,6 @@ const CompleteTaskModal = ({
               placeholder="Select your mental state"
               data={mentalStateOptions}
               required
-              leftSection={<IconBrain size={16} />}
               {...form.getInputProps('mentalState')}
               disabled={submitting}
             />
@@ -132,7 +130,6 @@ const CompleteTaskModal = ({
               required
               minRows={4}
               maxRows={8}
-              leftSection={<IconNotes size={16} />}
               {...form.getInputProps('reflection')}
               disabled={submitting}
             />

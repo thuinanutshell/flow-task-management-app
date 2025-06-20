@@ -1,7 +1,8 @@
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
+  line-height: 1.6;
   font-weight: 400;
+  font-size: 16px; /* Increased base font size from default 14px */
 
   color-scheme: light dark;
   color: rgba(255, 255, 255, 0.87);
@@ -28,18 +29,19 @@ body {
   place-items: center;
   min-width: 320px;
   min-height: 100vh;
+  font-size: 16px; /* Ensure body inherits the larger font size */
 }
 
 h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+  font-size: 3.6em; /* Increased from 3.2em */
+  line-height: 1.2; /* Slightly increased for better readability */
 }
 
 button {
   border-radius: 8px;
   border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
+  padding: 0.7em 1.4em; /* Slightly increased padding */
+  font-size: 1.1em; /* Increased from 1em */
   font-weight: 500;
   font-family: inherit;
   background-color: #1a1a1a;
@@ -65,4 +67,50 @@ button:focus-visible {
   button {
     background-color: #f9f9f9;
   }
+}
+
+/* Additional global font size improvements */
+* {
+  box-sizing: border-box;
+}
+
+/* Ensure all text elements have a minimum readable size */
+p, span, div, label, input, textarea, select {
+  font-size: inherit;
+  line-height: inherit;
+}
+
+/* Improve readability for small text elements */
+small {
+  font-size: 0.9em; /* Increased from typical 0.8em */
+}
+
+/* Ensure form elements are properly sized */
+input, textarea, select, button {
+  font-size: inherit;
+  font-family: inherit;
+}
+
+/* Better spacing for lists */
+ul, ol {
+  line-height: 1.6;
+}
+
+li {
+  margin-bottom: 0.25em;
+}
+
+/* Improve table readability */
+table {
+  font-size: inherit;
+}
+
+th, td {
+  padding: 0.75em 0.5em; /* Increased padding */
+}
+
+/* Better code readability */
+code, pre {
+  font-size: 0.95em; /* Slightly larger than typical */
+  line-height: 1.5;
 }

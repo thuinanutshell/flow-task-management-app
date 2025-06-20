@@ -1,16 +1,16 @@
 // pages/Dashboard.jsx - Fixed version with proper workspace lists
 import {
-    Alert,
-    Box,
-    Button,
-    Container,
-    Grid,
-    Group,
-    Loader,
-    SegmentedControl,
-    Stack,
-    Text,
-    Title
+  Alert,
+  Box,
+  Button,
+  Container,
+  Grid,
+  Group,
+  Loader,
+  SegmentedControl,
+  Stack,
+  Text,
+  Title
 } from '@mantine/core'
 import { IconAlertCircle, IconFolder, IconPlus } from '@tabler/icons-react'
 import { useState } from 'react'
@@ -27,6 +27,7 @@ const Dashboard = () => {
   const [getListModalOpen, setGetListModalOpen] = useState(false)
   const [addTaskModalOpen, setAddTaskModalOpen] = useState(false)
   const [selectedList, setSelectedList] = useState(null)
+  const [refreshTrigger, setRefreshTrigger] = useState(0)
   
   // Use the new workspace lists hook
   const {
@@ -75,7 +76,7 @@ const Dashboard = () => {
 
   const handleAddTaskSubmit = async (taskData) => {
     await createTask(taskData)
-    // Lists will auto-refresh their tasks via their own useEffect
+    setRefreshTrigger(prev => prev + 1)
   }
 
   const handleEditList = (list) => {
@@ -109,7 +110,7 @@ const Dashboard = () => {
 
   if (loading) {
     return (
-      <Container size="xl">
+      <Container size="100%" px="sm">
         <Stack align="center" justify="center" h={400}>
           <Loader size="lg" />
           <Text>Loading your dashboard...</Text>
@@ -119,8 +120,8 @@ const Dashboard = () => {
   }
 
   return (
-    <Container size="xl">
-      <Stack spacing="lg">
+    <Container size="100%" px="sm">
+      <Stack spacing="md">
 
         {/* Header */}
         <Group justify="space-between" align="flex-start">
@@ -214,7 +215,7 @@ const Dashboard = () => {
               </Box>
             ) : (
               // Lists Grid - Fixed 3-Column Layout
-              <Grid gutter="md">
+              <Grid gutter="sm">
                 {workspaceLists.map((list) => (
                   <Grid.Col 
                     key={`${list.id}-${list.isWorkspaceList ? 'imported' : 'created'}`} 
@@ -227,6 +228,7 @@ const Dashboard = () => {
                       onDelete={handleDeleteList}
                       onRemoveFromWorkspace={list.isWorkspaceList ? handleRemoveFromWorkspace : null}
                       isWorkspaceList={list.isWorkspaceList}
+                      refreshTrigger={refreshTrigger}
                     />
                   </Grid.Col>
                 ))}

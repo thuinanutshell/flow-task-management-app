@@ -1,27 +1,29 @@
 import {
-    ActionIcon,
-    Badge,
-    Button,
-    ColorSwatch,
-    Group,
-    Menu,
-    Paper,
-    Stack,
-    Text
+  ActionIcon,
+  Badge,
+  Button,
+  ColorSwatch,
+  Group,
+  Menu,
+  Paper,
+  Stack,
+  Text
 } from '@mantine/core'
 import {
-    IconCheck,
-    IconDots,
-    IconEdit,
-    IconPlayerPause,
-    IconPlayerPlay,
-    IconTrash
+  IconCheck,
+  IconDots,
+  IconEdit,
+  IconEye,
+  IconPlayerPause,
+  IconPlayerPlay,
+  IconTrash
 } from '@tabler/icons-react'
 import { useState } from 'react'
 import { useTimer } from '../../context/TimerContext'
 import { useTasks } from '../../hooks/useTasks'
 import CompleteTaskModal from './CompleteTaskModal'
 import EditTaskModal from './EditTaskModal'
+import TaskDetailModal from './TaskDetailModal'
 
 const TaskCardCompact = ({
   task,
@@ -29,6 +31,7 @@ const TaskCardCompact = ({
 }) => {
   const [completeModalOpen, setCompleteModalOpen] = useState(false)
   const [editModalOpen, setEditModalOpen] = useState(false)
+  const [detailModalOpen, setDetailModalOpen] = useState(false)
   const { updateTask, deleteTask, taskOptions } = useTasks()
   const {
     activeTask,
@@ -80,6 +83,10 @@ const TaskCardCompact = ({
       return null
     }
     return taskOptions.categories.find(cat => cat.id === task.category_id)
+  }
+
+  const handleViewDetails = () => {
+    setDetailModalOpen(true)
   }
 
   const handleStartTimer = async () => {
@@ -198,7 +205,6 @@ const TaskCardCompact = ({
         withBorder
         style={{
           backgroundColor: isThisTaskActive ? '#e3f2fd' : 'white',
-          cursor: 'pointer',
           transition: 'all 0.2s ease',
           border: isThisTaskActive ? '2px solid #1976d2' : '1px solid #dee2e6'
         }}
@@ -206,7 +212,10 @@ const TaskCardCompact = ({
         <Stack spacing="xs">
           {/* Task Header */}
           <Group justify="space-between" align="flex-start">
-            <div style={{ flex: 1 }}>
+            <div 
+              style={{ flex: 1, cursor: 'pointer' }}
+              onClick={handleViewDetails}
+            >
               <Text fw={500} size="sm" lineClamp={1}>
                 {task.name}
               </Text>
@@ -253,6 +262,12 @@ const TaskCardCompact = ({
 
                   <Menu.Dropdown>
                     <Menu.Item
+                      leftSection={<IconEye size={14} />}
+                      onClick={handleViewDetails}
+                    >
+                      Details
+                    </Menu.Item>
+                    <Menu.Item
                       leftSection={<IconEdit size={14} />}
                       onClick={handleEditTask}
                     >
@@ -289,6 +304,14 @@ const TaskCardCompact = ({
           </Group>
         </Stack>
       </Paper>
+
+      {/* Task Detail Modal */}
+      <TaskDetailModal
+        opened={detailModalOpen}
+        onClose={() => setDetailModalOpen(false)}
+        task={task}
+        onUpdate={onUpdate}
+      />
 
       {/* Complete Task Modal */}
       <CompleteTaskModal

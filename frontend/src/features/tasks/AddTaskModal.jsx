@@ -1,21 +1,20 @@
 import {
-    Button,
-    Group,
-    Loader,
-    Modal,
-    NumberInput,
-    Select,
-    Stack,
-    TextInput,
-    Textarea
+  Button,
+  Group,
+  Loader,
+  Modal,
+  NumberInput,
+  Select,
+  Stack,
+  TextInput,
+  Textarea
 } from '@mantine/core'
 import { useForm } from '@mantine/form'
 import {
-    IconChecklist,
-    IconClock,
-    IconFileText,
-    IconFlag,
-    IconTag
+  IconChecklist,
+  IconClock,
+  IconFlag,
+  IconTag
 } from '@tabler/icons-react'
 import { useEffect, useState } from 'react'
 import { taskService } from '../../services/tasks'
@@ -123,7 +122,7 @@ const AddTaskModal = ({
     <Modal
       opened={opened}
       onClose={handleClose}
-      title={`Add Task to "${listName}"`}
+      title={`Add New Task`}
       size="md"
       closeOnClickOutside={!submitting}
       closeOnEscape={!submitting}
@@ -142,7 +141,6 @@ const AddTaskModal = ({
           <Textarea
             label="Description"
             placeholder="Enter task description (optional)"
-            leftSection={<IconFileText size={16} />}
             minRows={3}
             {...form.getInputProps('description')}
             disabled={submitting}

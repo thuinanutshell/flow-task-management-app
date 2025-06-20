@@ -1,7 +1,23 @@
-// context/TimerContext.jsx
 import { notifications } from '@mantine/notifications'
 import { createContext, useContext, useEffect, useReducer } from 'react'
 import { taskService } from '../services/tasks'
+
+// 🔊 Web Audio API alarm sound
+function playBeep(frequency = 880, duration = 0.5) {
+  const ctx = new (window.AudioContext || window.webkitAudioContext)()
+  const oscillator = ctx.createOscillator()
+  const gain = ctx.createGain()
+
+  oscillator.type = 'sine'
+  oscillator.frequency.setValueAtTime(frequency, ctx.currentTime)
+  gain.gain.setValueAtTime(0.1, ctx.currentTime)  // Volume
+
+  oscillator.connect(gain)
+  gain.connect(ctx.destination)
+
+  oscillator.start()
+  oscillator.stop(ctx.currentTime + duration)
+}
 
 // Timer states based on backend task statuses
 const TimerStates = {
@@ -54,19 +70,19 @@ const timerReducer = (state, action) => {
         isExpired: false
       }
 
-    case ActionTypes.UPDATE_TIMER:
+    case ActionTypes.UPDATE_TIMER: {
       if (state.timerState !== TimerStates.ACTIVE) return state
- {
- const newElapsed = state.elapsedTime + 1
- const newRemaining = Math.max(0, state.timeRemaining - 1)
+      
+      const newElapsed = state.elapsedTime + 1
+      const newRemaining = Math.max(0, state.timeRemaining - 1)
 
- return {
- ...state,
- elapsedTime: newElapsed,
- timeRemaining: newRemaining,
- isExpired: newRemaining === 0
- }
+      return {
+        ...state,
+        elapsedTime: newElapsed,
+        timeRemaining: newRemaining,
+        isExpired: newRemaining === 0
       }
+    }
 
     case ActionTypes.PAUSE_TIMER: {
       return {
@@ -150,6 +166,8 @@ export const TimerProvider = ({ children }) => {
   useEffect(() => {
     if (state.isExpired && state.timerState === TimerStates.ACTIVE) {
       dispatch({ type: ActionTypes.TIMER_EXPIRED })
+
+      playBeep()
       
       notifications.show({
         title: 'Timer Completed!',

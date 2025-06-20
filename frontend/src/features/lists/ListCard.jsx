@@ -1,21 +1,20 @@
 import {
-    ActionIcon,
-    Badge,
-    Box,
-    Group,
-    Menu,
-    Paper,
-    ScrollArea,
-    Stack,
-    Text
+  ActionIcon,
+  Box,
+  Group,
+  Menu,
+  Paper,
+  ScrollArea,
+  Stack,
+  Text
 } from '@mantine/core'
 import {
-    IconDots,
-    IconEdit,
-    IconExternalLink,
-    IconPlus,
-    IconTrash,
-    IconX
+  IconDots,
+  IconEdit,
+  IconExternalLink,
+  IconPlus,
+  IconTrash,
+  IconX
 } from '@tabler/icons-react'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -28,7 +27,8 @@ const ListCard = ({
   onEdit, 
   onDelete,
   onRemoveFromWorkspace,
-  isWorkspaceList = false
+  isWorkspaceList = false,
+  refreshTrigger
 }) => {
   const navigate = useNavigate()
   const [tasks, setTasks] = useState([])
@@ -37,7 +37,7 @@ const ListCard = ({
   // Load tasks for this list
   useEffect(() => {
     loadListTasks()
-  }, [list.id])
+  }, [list.id, refreshTrigger])
 
   const loadListTasks = async () => {
     try {
@@ -52,10 +52,6 @@ const ListCard = ({
     }
   }
 
-  // Calculate progress percentage
-  const progressPercentage = list.total_tasks > 0 
-    ? Math.round(((list.completed_tasks || 0) / list.total_tasks) * 100)
-    : 0
 
   const handleAddTask = (e) => {
     e.stopPropagation()

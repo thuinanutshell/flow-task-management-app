@@ -1,16 +1,15 @@
 // pages/Login.jsx - Mantine version
 import {
-    Alert,
-    Button,
-    Container,
-    Group,
-    Paper,
-    PasswordInput,
-    SimpleGrid,
-    Stack,
-    Text,
-    TextInput,
-    Title
+  Alert,
+  Button,
+  Container,
+  Group,
+  Paper,
+  PasswordInput,
+  SimpleGrid,
+  Stack,
+  TextInput,
+  Title
 } from '@mantine/core'
 import { useForm } from '@mantine/form'
 import { IconAlertCircle } from '@tabler/icons-react'
@@ -79,12 +78,6 @@ const Login = () => {
       <Title ta="center" order={2}>
         {isLoginMode ? 'Welcome back!' : 'Create account'}
       </Title>
-      <Text c="dimmed" size="sm" ta="center" mt={5}>
-        {isLoginMode 
-          ? 'Enter your credentials to access your tasks' 
-          : 'Fill in your information to get started'
-        }
-      </Text>
 
       <Paper withBorder shadow="md" p={30} mt={30} radius="md">
         <form onSubmit={form.onSubmit(handleSubmit)}>
@@ -157,16 +150,16 @@ const Login = () => {
               </>
             )}
 
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               loading={isLoading}
-              fullWidth 
-              mt="xl"
+              fullWidth
+              mt="sm"
             >
               {isLoginMode ? 'Sign in' : 'Sign up'}
             </Button>
 
-            <Group justify="center" mt="md">
+            <Group justify="center" mt="sm">
               <Button 
                 variant="subtle" 
                 onClick={toggleMode}
