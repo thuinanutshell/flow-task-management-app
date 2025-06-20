@@ -257,12 +257,26 @@ class TaskService:
                 f"Invalid mental state value. Valid options: {valid_values}"
             )
 
-        # Calculate elapsed time and add to total
-        elapsed_minutes = task.current_session_elapsed_minutes
+        # FIXED: Calculate elapsed time properly
+        # Get current time and start time
+        now = get_utc_now()
+        start_time = ensure_timezone_aware(task.current_work_start)
+
+        # Calculate elapsed minutes in current session
+        elapsed_seconds = (now - start_time).total_seconds()
+        elapsed_minutes = int(elapsed_seconds / 60)
+
+        # Add elapsed time to total time worked
         task.total_time_worked += elapsed_minutes
 
+        # IMPORTANT: Log for debugging
+        print(f"DEBUG: Session started at: {start_time}")
+        print(f"DEBUG: Completed at: {now}")
+        print(f"DEBUG: Elapsed seconds: {elapsed_seconds}")
+        print(f"DEBUG: Elapsed minutes: {elapsed_minutes}")
+        print(f"DEBUG: New total time worked: {task.total_time_worked}")
+
         # Complete the task
-        now = get_utc_now()
         task.current_work_start = None
         task.current_planned_end = None
         task.status = TaskStatus.DONE

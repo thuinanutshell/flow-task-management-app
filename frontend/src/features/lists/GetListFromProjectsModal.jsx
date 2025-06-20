@@ -1,24 +1,24 @@
 import {
-    Alert,
-    Badge,
-    Button,
-    Card,
-    Group,
-    Loader,
-    Modal,
-    ScrollArea,
-    Select,
-    Stack,
-    Text,
-    TextInput,
-    Title
+  Alert,
+  Badge,
+  Button,
+  Card,
+  Group,
+  Loader,
+  Modal,
+  ScrollArea,
+  Select,
+  Stack,
+  Text,
+  TextInput,
+  Title
 } from '@mantine/core'
 import {
-    IconAlertCircle,
-    IconCheck,
-    IconFolder,
-    IconList,
-    IconSearch
+  IconAlertCircle,
+  IconCheck,
+  IconFolder,
+  IconList,
+  IconSearch
 } from '@tabler/icons-react'
 import { useEffect, useState } from 'react'
 import { projectService } from '../../services/projects'
@@ -188,11 +188,6 @@ const GetListFromProjectsModal = ({
       closeOnEscape={!submitting}
     >
       <Stack spacing="md">
-        {/* Header Description */}
-        <Text size="sm" c="dimmed">
-          Select lists from your existing projects to import to your workspace. 
-          This will not move or duplicate the lists - they will be linked to your dashboard for easy access.
-        </Text>
 
         {/* Filters */}
         <Group spacing="md">

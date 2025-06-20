@@ -1,13 +1,13 @@
 import {
-    Alert,
-    Button,
-    Group,
-    Loader,
-    Modal,
-    Select,
-    Stack,
-    Text,
-    TextInput
+  Alert,
+  Button,
+  Group,
+  Loader,
+  Modal,
+  Select,
+  Stack,
+  Text,
+  TextInput
 } from '@mantine/core'
 import { useForm } from '@mantine/form'
 import { IconAlertCircle, IconFolder, IconList } from '@tabler/icons-react'
@@ -97,7 +97,7 @@ const CreateListModal = ({
   // Prepare project options for the select
   const projectOptions = projects.map(project => ({
     value: project.id.toString(),
-    label: `${project.name} (${project.status})`
+    label: `${project.name}`
   }))
 
   // Get the preselected project name for display

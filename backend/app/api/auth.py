@@ -103,7 +103,13 @@ def login():
             message="Login successful",
             data={
                 "token": token,
-                "user": {"id": user.id, "email": user.email, "username": user.username},
+                "user": {
+                    "id": user.id,
+                    "first_name": user.first_name,
+                    "last_name": user.last_name,
+                    "email": user.email,
+                    "username": user.username,
+                },
             },
         )
 
@@ -125,7 +131,9 @@ def google_oauth():
 
         # Verify Google token
         client_id = os.getenv("GOOGLE_CLIENT_ID")
-        idinfo = id_token.verify_oauth2_token(token, google_requests.Request(), client_id)
+        idinfo = id_token.verify_oauth2_token(
+            token, google_requests.Request(), client_id
+        )
 
         if idinfo["iss"] not in ["accounts.google.com", "https://accounts.google.com"]:
             return create_response(False, "Invalid token issuer", status=400)
@@ -194,38 +202,49 @@ def update_profile():
     try:
         user_id = get_jwt_identity()
         data = request.get_json()
-        
+
         if not data:
-            return jsonify({"success": False, "message": "No update data provided"}), 400
-        
+            return (
+                jsonify({"success": False, "message": "No update data provided"}),
+                400,
+            )
+
         # Use the auth service
         auth_service = AuthService(db)
         user = auth_service.update_profile(user_id, data)
-        
+
         # Log the updated user
-        current_app.logger.info(f"Updated user: {user.id}, {user.first_name}, {user.last_name}")
-        
+        current_app.logger.info(
+            f"Updated user: {user.id}, {user.first_name}, {user.last_name}"
+        )
+
         # Create a response with only the necessary user data
         user_data = {
             "id": str(user.id),
             "username": user.username,
             "email": user.email,
             "first_name": user.first_name,
-            "last_name": user.last_name
+            "last_name": user.last_name,
         }
-        
+
         # Return the response with the correct message
-        return jsonify({
-            "success": True, 
-            "message": "Profile updated successfully",
-            "data": user_data
-        }), 200
-        
+        return (
+            jsonify(
+                {
+                    "success": True,
+                    "message": "Profile updated successfully",
+                    "data": user_data,
+                }
+            ),
+            200,
+        )
+
     except ValueError as e:
         current_app.logger.error(f"Value error in update_profile: {str(e)}")
         return jsonify({"success": False, "message": str(e)}), 400
     except Exception as e:
         import traceback
+
         current_app.logger.error(f"Update profile error: {str(e)}")
         current_app.logger.error(f"Traceback: {traceback.format_exc()}")
         # Ensure the session is rolled back
@@ -249,7 +268,7 @@ def delete_account():
             current_timestamp = int(datetime.now(timezone.utc).timestamp())
             ttl = exp_timestamp - current_timestamp
             current_app.redis.setex(f"revoked_token:{jti}", ttl, "1")
-            
+
         # Todo: add more information to the response
         return create_response(
             message="Account deleted successfully",

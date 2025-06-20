@@ -1,13 +1,13 @@
 import {
-    Badge,
-    Card,
-    Group,
-    Stack,
-    Text
+  Badge,
+  Card,
+  Group,
+  Stack,
+  Text
 } from '@mantine/core'
 import {
-    IconClock,
-    IconList
+  IconClock,
+  IconList
 } from '@tabler/icons-react'
 
 const ProjectCard = ({ 
@@ -48,7 +48,7 @@ const ProjectCard = ({
       padding="lg" 
       radius="md" 
       withBorder
-      style={{ cursor: onClick ? 'pointer' : 'default' }}
+      style={{ cursor: onClick ? 'pointer' : 'default', height: '100%', display: 'flex', flexDirection: 'column'}}
       onClick={handleCardClick}
     >
       <Stack spacing="sm">

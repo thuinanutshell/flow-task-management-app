@@ -1,20 +1,20 @@
 // features/categories/CategoryCard.jsx
 import {
-    ActionIcon,
-    Badge,
-    Card,
-    ColorSwatch,
-    Group,
-    Menu,
-    Stack,
-    Text
+  ActionIcon,
+  Badge,
+  Card,
+  ColorSwatch,
+  Group,
+  Menu,
+  Stack,
+  Text
 } from '@mantine/core'
 import {
-    IconDots,
-    IconEdit,
-    IconEye,
-    IconTag,
-    IconTrash
+  IconDots,
+  IconEdit,
+  IconEye,
+  IconTag,
+  IconTrash
 } from '@tabler/icons-react'
 
 const CategoryCard = ({ 
@@ -37,7 +37,7 @@ const CategoryCard = ({
       padding="lg" 
       radius="md" 
       withBorder
-      style={{ cursor: onClick ? 'pointer' : 'default' }}
+      style={{ cursor: onClick ? 'pointer' : 'default', height: '100%', display: 'flex', flexDirection: 'column'}}
       onClick={handleCardClick}
     >
       <Stack spacing="sm">

@@ -103,7 +103,6 @@ const EditProjectModal = ({
           <Textarea
             label="Description"
             placeholder="Enter project description (optional)"
-            leftSection={<IconFileText size={16} />}
             minRows={3}
             {...form.getInputProps('description')}
             disabled={submitting}
