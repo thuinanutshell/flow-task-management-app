@@ -54,14 +54,15 @@ const ProjectDetailView = () => {
   }, [projectId])
 
   const handleCreateList = async (listData) => {
+    // This should create a list in the current project
     const updatedListData = {
-      ...listData,
-      projectId: parseInt(projectId)
+        ...listData,
+        projectId: parseInt(projectId) // Use the current project ID
     }
     await createList(updatedListData)
     // Refresh project data to show new list
     await loadProjectDetail()
-  }
+    }
 
   const handleEditProject = () => {
     // TODO: Open edit modal or navigate to edit page
