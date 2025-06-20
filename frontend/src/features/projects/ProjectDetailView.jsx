@@ -22,8 +22,8 @@ import {
 } from '@tabler/icons-react'
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { useLists } from '../../hooks/useLists'
 import { useProjects } from '../../hooks/useProjects'
+import { listService } from '../../services/lists'
 import CreateListModal from '../lists/CreateListModal'
 
 const ProjectDetailView = () => {
@@ -34,7 +34,6 @@ const ProjectDetailView = () => {
   const [createListModalOpen, setCreateListModalOpen] = useState(false)
   
   const { getProjectDetail } = useProjects()
-  const { createList } = useLists()
 
   const loadProjectDetail = async () => {
     try {
@@ -53,16 +52,25 @@ const ProjectDetailView = () => {
     loadProjectDetail()
   }, [projectId])
 
+  // Fixed: Create list directly in this project, not through dashboard
   const handleCreateList = async (listData) => {
-    // This should create a list in the current project
-    const updatedListData = {
-        ...listData,
-        projectId: parseInt(projectId) // Use the current project ID
+    try {
+      // Create list directly in this project using listService
+      await listService.createList(parseInt(projectId), {
+        name: listData.name,
+        progress: listData.progress || 0.0
+      })
+      
+      // Refresh project data to show the new list
+      await loadProjectDetail()
+      
+      // Show success notification (optional, since listService handles this)
+      console.log('List created successfully in project')
+    } catch (error) {
+      console.error('Failed to create list in project:', error)
+      // Error notification is handled by listService
     }
-    await createList(updatedListData)
-    // Refresh project data to show new list
-    await loadProjectDetail()
-    }
+  }
 
   const handleEditProject = () => {
     // TODO: Open edit modal or navigate to edit page
@@ -296,6 +304,9 @@ const ProjectDetailView = () => {
           opened={createListModalOpen}
           onClose={() => setCreateListModalOpen(false)}
           onSuccess={handleCreateList}
+          preselectedProjectId={parseInt(projectId)}
+          hideProjectSelect={true}
+          projectName={project?.name}
         />
       </Stack>
     </Box>

@@ -1,4 +1,4 @@
-// pages/Dashboard.jsx - Fixed version with proper list flows
+// pages/Dashboard.jsx - Fixed version with proper workspace lists
 import {
     Alert,
     Box,
@@ -12,30 +12,33 @@ import {
     Text,
     Title
 } from '@mantine/core'
-import { notifications } from '@mantine/notifications'
 import { IconAlertCircle, IconFolder, IconPlus } from '@tabler/icons-react'
 import { useState } from 'react'
-import { useAuth } from '../context/AuthContext'
 import CreateListModal from '../features/lists/CreateListModal'
 import GetListFromProjectsModal from '../features/lists/GetListFromProjectsModal'
 import ListCard from '../features/lists/ListCard'
 import AddTaskModal from '../features/tasks/AddTaskModal'
-import { useLists } from '../hooks/useLists'
 import { useTasks } from '../hooks/useTasks'
+import { useWorkspaceLists } from '../hooks/useWorkspaceLists'
 
 const Dashboard = () => {
-  const { user } = useAuth()
   const [activeTab, setActiveTab] = useState('board')
   const [createListModalOpen, setCreateListModalOpen] = useState(false)
   const [getListModalOpen, setGetListModalOpen] = useState(false)
   const [addTaskModalOpen, setAddTaskModalOpen] = useState(false)
   const [selectedList, setSelectedList] = useState(null)
   
-  // Workspace lists - lists imported from projects for daily work
-  const [workspaceLists, setWorkspaceLists] = useState([])
+  // Use the new workspace lists hook
+  const {
+    workspaceLists,
+    loading,
+    error,
+    createListInWorkspace,
+    importListsToWorkspace,
+    removeFromWorkspace,
+    deleteListCompletely,
+  } = useWorkspaceLists()
   
-  // Use the hooks
-  const { lists, loading, error, createList, deleteList } = useLists()
   const { createTask } = useTasks()
 
   // Get current date
@@ -52,9 +55,9 @@ const Dashboard = () => {
     setCreateListModalOpen(true)
   }
 
+  // Create a list and add it to workspace
   const handleCreateListSubmit = async (listData) => {
-    // This creates a new list and assigns it to a project
-    await createList(listData)
+    await createListInWorkspace(listData)
   }
 
   const handleGetListFromProjects = () => {
@@ -62,39 +65,7 @@ const Dashboard = () => {
   }
 
   const handleGetListsSuccess = async (selectedLists) => {
-    try {
-      // Import selected lists to workspace (don't create new ones)
-      const newWorkspaceLists = selectedLists.map(list => ({
-        ...list,
-        isWorkspaceList: true, // Flag to identify workspace lists
-        originalProjectId: list.project_id,
-        originalProjectName: list.project_name || 'Unknown Project',
-        // Add project info if missing
-        project_name: list.project_name || 'Unknown Project',
-        project_id: list.project_id,
-        project_status: list.project_status || 'unknown'
-      }))
-      
-      setWorkspaceLists(prev => {
-        // Avoid duplicates by checking if list ID already exists
-        const existingIds = prev.map(l => l.id)
-        const uniqueNewLists = newWorkspaceLists.filter(l => !existingIds.includes(l.id))
-        return [...prev, ...uniqueNewLists]
-      })
-      
-      notifications.show({
-        title: 'Success',
-        message: `Added ${selectedLists.length} list(s) to workspace`,
-        color: 'green'
-      })
-    } catch (error) {
-      console.error('Failed to import lists:', error)
-      notifications.show({
-        title: 'Error',
-        message: 'Failed to import lists to workspace',
-        color: 'red'
-      })
-    }
+    await importListsToWorkspace(selectedLists)
   }
 
   const handleAddTask = (list) => {
@@ -114,36 +85,27 @@ const Dashboard = () => {
 
   const handleDeleteList = async (list) => {
     if (list.isWorkspaceList) {
-      // Remove from workspace (local state only)
-      setWorkspaceLists(prev => prev.filter(l => l.id !== list.id))
-      notifications.show({
-        title: 'Success',
-        message: 'List removed from workspace',
-        color: 'green'
-      })
+      // This is an imported list - just remove from workspace
+      if (window.confirm(`Remove "${list.name}" from workspace? This won't delete the list from the project.`)) {
+        await removeFromWorkspace(list.id)
+      }
     } else {
-      // Delete actual list
+      // This is a dashboard-created list - delete completely
       if (window.confirm(`Are you sure you want to delete "${list.name}"? This will also delete all tasks in this list.`)) {
-        await deleteList(list.id)
+        await deleteListCompletely(list.id)
       }
     }
   }
 
-  const handleRemoveFromWorkspace = (list) => {
+  const handleRemoveFromWorkspace = async (list) => {
     // Remove list from workspace without deleting it from the project
-    setWorkspaceLists(prev => prev.filter(l => l.id !== list.id))
-    notifications.show({
-      title: 'Success',
-      message: 'List removed from workspace',
-      color: 'green'
-    })
+    await removeFromWorkspace(list.id)
   }
 
-  // Combine created lists and workspace lists for display
-  const allDisplayLists = [
-    ...lists.map(list => ({ ...list, isWorkspaceList: false })),
-    ...workspaceLists
-  ]
+  // Separate lists by type for display
+  const dashboardCreatedLists = workspaceLists.filter(list => !list.isWorkspaceList)
+  const importedLists = workspaceLists.filter(list => list.isWorkspaceList)
+  const totalTasks = workspaceLists.reduce((sum, list) => sum + (list.total_tasks || 0), 0)
 
   if (loading) {
     return (
@@ -159,6 +121,7 @@ const Dashboard = () => {
   return (
     <Container size="xl">
       <Stack spacing="lg">
+
         {/* Header */}
         <Group justify="space-between" align="flex-start">
           <div>
@@ -166,11 +129,6 @@ const Dashboard = () => {
             <Text c="dimmed" size="md" mt="xs">
               {getCurrentDate()}
             </Text>
-            {workspaceLists.length > 0 && (
-              <Text size="sm" c="blue" mt="xs">
-                {workspaceLists.length} list(s) imported from projects
-              </Text>
-            )}
           </div>
         </Group>
 
@@ -192,13 +150,13 @@ const Dashboard = () => {
               variant="outline"
               onClick={handleGetListFromProjects}
             >
-              Get List From Projects
+              Import From Projects
             </Button>
             <Button
               leftSection={<IconPlus size={16} />}
               onClick={handleCreateList}
             >
-              Add New List
+              Create New List
             </Button>
           </Group>
         </Group>
@@ -213,7 +171,7 @@ const Dashboard = () => {
         {/* Main Content Area */}
         {activeTab === 'board' ? (
           <Box>
-            {allDisplayLists.length === 0 ? (
+            {workspaceLists.length === 0 ? (
               // Empty State
               <Box
                 p="xl"
@@ -232,9 +190,9 @@ const Dashboard = () => {
                 <Stack align="center" spacing="md">
                   <IconFolder size={48} color="#adb5bd" />
                   <div>
-                    <Title order={3} c="dimmed">No lists yet</Title>
+                    <Title order={3} c="dimmed">No lists in workspace</Title>
                     <Text c="dimmed" mt="xs" size="sm">
-                      Get started by creating your first list or importing from projects
+                      Create a new list or import existing lists from your projects
                     </Text>
                   </div>
                   <Group mt="md">
@@ -243,7 +201,7 @@ const Dashboard = () => {
                       variant="outline"
                       onClick={handleGetListFromProjects}
                     >
-                      Get List From Projects
+                      Import From Projects
                     </Button>
                     <Button
                       leftSection={<IconPlus size={16} />}
@@ -257,9 +215,9 @@ const Dashboard = () => {
             ) : (
               // Lists Grid - Fixed 3-Column Layout
               <Grid gutter="md">
-                {allDisplayLists.map((list) => (
+                {workspaceLists.map((list) => (
                   <Grid.Col 
-                    key={`${list.id}-${list.isWorkspaceList ? 'workspace' : 'created'}`} 
+                    key={`${list.id}-${list.isWorkspaceList ? 'imported' : 'created'}`} 
                     span={4} // Fixed 3 columns (12/3 = 4)
                   >
                     <ListCard 
@@ -295,18 +253,18 @@ const Dashboard = () => {
                 <Text c="dimmed" size="sm">
                   This will show your task completion progress and analytics
                 </Text>
-                {allDisplayLists.length > 0 && (
+                {workspaceLists.length > 0 && (
                   <Stack spacing="xs" mt="md">
                     <Text size="sm" c="dimmed">Current Statistics:</Text>
                     <Group spacing="md" justify="center">
                       <Text size="sm">
-                        <strong>{lists.length}</strong> created lists
+                        <strong>{dashboardCreatedLists.length}</strong> created lists
                       </Text>
                       <Text size="sm">
-                        <strong>{workspaceLists.length}</strong> imported lists
+                        <strong>{importedLists.length}</strong> imported lists
                       </Text>
                       <Text size="sm">
-                        <strong>{allDisplayLists.reduce((sum, list) => sum + (list.total_tasks || 0), 0)}</strong> total tasks
+                        <strong>{totalTasks}</strong> total tasks
                       </Text>
                     </Group>
                   </Stack>
@@ -321,6 +279,7 @@ const Dashboard = () => {
           opened={createListModalOpen}
           onClose={() => setCreateListModalOpen(false)}
           onSuccess={handleCreateListSubmit}
+          hideProjectSelect={false}
         />
 
         <GetListFromProjectsModal
