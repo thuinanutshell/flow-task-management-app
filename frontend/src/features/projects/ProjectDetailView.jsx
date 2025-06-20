@@ -25,6 +25,8 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { useProjects } from '../../hooks/useProjects'
 import { listService } from '../../services/lists'
 import CreateListModal from '../lists/CreateListModal'
+import EditListModal from '../lists/EditListModal'
+import EditProjectModal from '../projects/EditProjectModal'
 
 const ProjectDetailView = () => {
   const { projectId } = useParams()
@@ -32,8 +34,11 @@ const ProjectDetailView = () => {
   const [project, setProject] = useState(null)
   const [loading, setLoading] = useState(true)
   const [createListModalOpen, setCreateListModalOpen] = useState(false)
+  const [editProjectModalOpen, setEditProjectModalOpen] = useState(false)
+  const [editListModalOpen, setEditListModalOpen] = useState(false)
+  const [selectedList, setSelectedList] = useState(null)
   
-  const { getProjectDetail } = useProjects()
+  const { getProjectDetail, updateProject, deleteProject } = useProjects()
 
   const loadProjectDetail = async () => {
     try {
@@ -52,10 +57,9 @@ const ProjectDetailView = () => {
     loadProjectDetail()
   }, [projectId])
 
-  // Fixed: Create list directly in this project, not through dashboard
+  // Create list directly in this project
   const handleCreateList = async (listData) => {
     try {
-      // Create list directly in this project using listService
       await listService.createList(parseInt(projectId), {
         name: listData.name,
         progress: listData.progress || 0.0
@@ -63,23 +67,60 @@ const ProjectDetailView = () => {
       
       // Refresh project data to show the new list
       await loadProjectDetail()
-      
-      // Show success notification (optional, since listService handles this)
-      console.log('List created successfully in project')
     } catch (error) {
       console.error('Failed to create list in project:', error)
-      // Error notification is handled by listService
     }
   }
 
   const handleEditProject = () => {
-    // TODO: Open edit modal or navigate to edit page
-    console.log('Edit project:', project.id)
+    setEditProjectModalOpen(true)
   }
 
-  const handleDeleteProject = () => {
-    // TODO: Confirm and delete project
-    console.log('Delete project:', project.id)
+  const handleEditProjectSubmit = async (projectId, updateData) => {
+    try {
+      const updatedProject = await updateProject(projectId, updateData)
+      setProject(prev => ({ ...prev, ...updatedProject.data }))
+    } catch (error) {
+      console.error('Failed to update project:', error)
+    }
+  }
+
+  const handleDeleteProject = async () => {
+    if (window.confirm(`Are you sure you want to delete "${project.name}"? This will also delete all lists and tasks in this project.`)) {
+      try {
+        await deleteProject(project.id)
+        navigate('/projects')
+      } catch (error) {
+        console.error('Failed to delete project:', error)
+      }
+    }
+  }
+
+  const handleEditList = (list) => {
+    setSelectedList(list)
+    setEditListModalOpen(true)
+  }
+
+  const handleEditListSubmit = async (listId, updateData) => {
+    try {
+      await listService.updateList(listId, updateData)
+      // Refresh project data to show updated list
+      await loadProjectDetail()
+    } catch (error) {
+      console.error('Failed to update list:', error)
+    }
+  }
+
+  const handleDeleteList = async (list) => {
+    if (window.confirm(`Are you sure you want to delete "${list.name}"? This will also delete all tasks in this list.`)) {
+      try {
+        await listService.deleteList(list.id)
+        // Refresh project data to show changes
+        await loadProjectDetail()
+      } catch (error) {
+        console.error('Failed to delete list:', error)
+      }
+    }
   }
 
   // Get status color
@@ -255,10 +296,34 @@ const ProjectDetailView = () => {
                   withBorder
                   p="lg"
                   style={{ cursor: 'pointer' }}
-                  onClick={() => navigate('/dashboard')}
                 >
                   <Stack spacing="sm">
-                    <Text fw={500} size="md">{list.name}</Text>
+                    <Group justify="space-between" align="flex-start">
+                      <Text fw={500} size="md">{list.name}</Text>
+                      <Group spacing="xs">
+                        <ActionIcon
+                          variant="subtle"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleEditList(list)
+                          }}
+                        >
+                          <IconEdit size={14} />
+                        </ActionIcon>
+                        <ActionIcon
+                          variant="subtle"
+                          size="sm"
+                          color="red"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleDeleteList(list)
+                          }}
+                        >
+                          <IconTrash size={14} />
+                        </ActionIcon>
+                      </Group>
+                    </Group>
                     
                     <Group justify="space-between">
                       <Text size="sm" c="dimmed">
@@ -299,7 +364,7 @@ const ProjectDetailView = () => {
           </Card>
         )}
 
-        {/* Create List Modal */}
+        {/* Modals */}
         <CreateListModal
           opened={createListModalOpen}
           onClose={() => setCreateListModalOpen(false)}
@@ -307,6 +372,23 @@ const ProjectDetailView = () => {
           preselectedProjectId={parseInt(projectId)}
           hideProjectSelect={true}
           projectName={project?.name}
+        />
+
+        <EditProjectModal
+          opened={editProjectModalOpen}
+          onClose={() => setEditProjectModalOpen(false)}
+          onSuccess={handleEditProjectSubmit}
+          project={project}
+        />
+
+        <EditListModal
+          opened={editListModalOpen}
+          onClose={() => {
+            setEditListModalOpen(false)
+            setSelectedList(null)
+          }}
+          onSuccess={handleEditListSubmit}
+          list={selectedList}
         />
       </Stack>
     </Box>

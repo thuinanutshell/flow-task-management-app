@@ -24,7 +24,14 @@ def create_app(config_name="default"):
     db.init_app(app)
     migrate.init_app(app, db)
     jwt.init_app(app)
-    cors.init_app(app)
+
+    # Configure CORS to allow requests from your frontend
+    cors.init_app(
+        app,
+        origins=["http://localhost:5173"],
+        allow_headers=["Content-Type", "Authorization"],
+        methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    )
 
     # Import models
     from app.models import (

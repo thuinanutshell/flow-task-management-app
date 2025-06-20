@@ -1,25 +1,35 @@
 import {
+    ActionIcon,
     Badge,
     Button,
+    ColorSwatch,
     Group,
+    Menu,
     Paper,
     Stack,
     Text
 } from '@mantine/core'
 import {
     IconCheck,
+    IconDots,
+    IconEdit,
     IconPlayerPause,
-    IconPlayerPlay
+    IconPlayerPlay,
+    IconTrash
 } from '@tabler/icons-react'
 import { useState } from 'react'
 import { useTimer } from '../../context/TimerContext'
+import { useTasks } from '../../hooks/useTasks'
 import CompleteTaskModal from './CompleteTaskModal'
+import EditTaskModal from './EditTaskModal'
 
 const TaskCardCompact = ({
   task,
   onUpdate
 }) => {
   const [completeModalOpen, setCompleteModalOpen] = useState(false)
+  const [editModalOpen, setEditModalOpen] = useState(false)
+  const { updateTask, deleteTask, taskOptions } = useTasks()
   const {
     activeTask,
     isTimerActive,
@@ -64,6 +74,14 @@ const TaskCardCompact = ({
     ).join(' ')
   }
 
+  // Get category information
+  const getTaskCategory = () => {
+    if (!task.category_id || !taskOptions?.categories) {
+      return null
+    }
+    return taskOptions.categories.find(cat => cat.id === task.category_id)
+  }
+
   const handleStartTimer = async () => {
     try {
       await startTimer(task)
@@ -93,6 +111,31 @@ const TaskCardCompact = ({
       if (onUpdate) onUpdate()
     } catch (error) {
       console.error('Failed to complete task:', error)
+    }
+  }
+
+  const handleEditTask = () => {
+    setEditModalOpen(true)
+  }
+
+  const handleEditSubmit = async (taskId, updateData) => {
+    try {
+      await updateTask(taskId, updateData)
+      setEditModalOpen(false)
+      if (onUpdate) onUpdate()
+    } catch (error) {
+      console.error('Failed to update task:', error)
+    }
+  }
+
+  const handleDeleteTask = async () => {
+    if (window.confirm(`Are you sure you want to delete "${task.name}"?`)) {
+      try {
+        await deleteTask(task.id)
+        if (onUpdate) onUpdate()
+      } catch (error) {
+        console.error('Failed to delete task:', error)
+      }
     }
   }
 
@@ -172,15 +215,60 @@ const TaskCardCompact = ({
                   {task.description}
                 </Text>
               )}
+              {getTaskCategory() && (
+                <Group spacing="xs" align="center" mt={4}>
+                  <ColorSwatch
+                    color={getTaskCategory().color}
+                    size={12}
+                  />
+                  <Text size="xs" c="dimmed">
+                    {getTaskCategory().name}
+                  </Text>
+                </Group>
+              )}
             </div>
 
-            <Badge
-              color={getPriorityColor(task.priority)}
-              size="xs"
-              variant="filled"
-            >
-              {task.priority}
-            </Badge>
+            <Group spacing="xs" align="center">
+              <Badge
+                color={getPriorityColor(task.priority)}
+                size="xs"
+                variant="filled"
+              >
+                {task.priority}
+              </Badge>
+
+              {/* Edit/Delete Menu - Only show if task is not active */}
+              {!isThisTaskActive && (
+                <Menu shadow="md" width={120}>
+                  <Menu.Target>
+                    <ActionIcon
+                      variant="subtle"
+                      color="gray"
+                      size="sm"
+                      aria-label="Task options"
+                    >
+                      <IconDots size={14} />
+                    </ActionIcon>
+                  </Menu.Target>
+
+                  <Menu.Dropdown>
+                    <Menu.Item
+                      leftSection={<IconEdit size={14} />}
+                      onClick={handleEditTask}
+                    >
+                      Edit
+                    </Menu.Item>
+                    <Menu.Item
+                      leftSection={<IconTrash size={14} />}
+                      color="red"
+                      onClick={handleDeleteTask}
+                    >
+                      Delete
+                    </Menu.Item>
+                  </Menu.Dropdown>
+                </Menu>
+              )}
+            </Group>
           </Group>
 
           {/* Status and Action */}
@@ -209,6 +297,14 @@ const TaskCardCompact = ({
         onComplete={handleCompleteSubmit}
         task={task}
         timeWorked={task.total_time_worked || 0}
+      />
+
+      {/* Edit Task Modal */}
+      <EditTaskModal
+        opened={editModalOpen}
+        onClose={() => setEditModalOpen(false)}
+        onSuccess={handleEditSubmit}
+        task={task}
       />
     </>
   )
