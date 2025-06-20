@@ -12,21 +12,26 @@ import {
 } from '@mantine/core'
 import { IconAlertCircle, IconFolder, IconPlus } from '@tabler/icons-react'
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import CreateProjectModal from '../features/projects/CreateProjectModal'
+import EditProjectModal from '../features/projects/EditProjectModal'
 import ProjectCard from '../features/projects/ProjectCard'
 import { useProjects } from '../hooks/useProjects'
 
 const Projects = () => {
+  const navigate = useNavigate()
   const [createProjectModalOpen, setCreateProjectModalOpen] = useState(false)
-  
+  const [editProjectModalOpen, setEditProjectModalOpen] = useState(false)
+  const [selectedProject, setSelectedProject] = useState(null)
+
   // Use the projects hook
-  const { 
-    projects, 
-    loading, 
-    error, 
-    createProject, 
-    updateProject, 
-    deleteProject 
+  const {
+    projects,
+    loading,
+    error,
+    createProject,
+    updateProject,
+    deleteProject
   } = useProjects()
 
   const handleCreateProject = () => {
@@ -38,8 +43,13 @@ const Projects = () => {
   }
 
   const handleEditProject = (project) => {
-    // TODO: Open edit modal
-    console.log('Edit project:', project)
+    setSelectedProject(project)
+    setEditProjectModalOpen(true)
+  }
+
+  const handleEditProjectSubmit = async (projectId, updateData) => {
+    await updateProject(projectId, updateData)
+    setSelectedProject(null)
   }
 
   const handleDeleteProject = async (project) => {
@@ -49,8 +59,8 @@ const Projects = () => {
   }
 
   const handleViewProject = (project) => {
-    // TODO: Navigate to project detail page
-    console.log('View project:', project)
+    // Navigate to project detail page
+    navigate(`/projects/${project.id}`)
   }
 
   if (loading) {
@@ -136,6 +146,7 @@ const Projects = () => {
                     onEdit={handleEditProject}
                     onDelete={handleDeleteProject}
                     onView={handleViewProject}
+                    onClick={handleViewProject}
                   />
                 </Grid.Col>
               ))}
@@ -148,6 +159,17 @@ const Projects = () => {
           opened={createProjectModalOpen}
           onClose={() => setCreateProjectModalOpen(false)}
           onSuccess={handleCreateProjectSubmit}
+        />
+
+        {/* Edit Project Modal */}
+        <EditProjectModal
+          opened={editProjectModalOpen}
+          onClose={() => {
+            setEditProjectModalOpen(false)
+            setSelectedProject(null)
+          }}
+          onSuccess={handleEditProjectSubmit}
+          project={selectedProject}
         />
       </Stack>
     </Container>

@@ -1,4 +1,4 @@
-// pages/Dashboard.jsx - Task Management Dashboard
+// pages/Dashboard.jsx - Updated to match screenshot
 import {
     Alert,
     Box,
@@ -62,13 +62,7 @@ const Dashboard = () => {
 
   const handleAddTaskSubmit = async (taskData) => {
     await createTask(taskData)
-    // Refresh lists to update task counts
-    // The useLists hook will need to be updated to refresh when tasks change
-  }
-
-  const handleViewList = (list) => {
-    // TODO: Navigate to list detail page or open tasks view
-    console.log('View list:', list)
+    // Lists will auto-refresh their tasks via their own useEffect
   }
 
   const handleEditList = (list) => {
@@ -80,22 +74,6 @@ const Dashboard = () => {
     if (window.confirm(`Are you sure you want to delete "${list.name}"? This will also delete all tasks in this list.`)) {
       await deleteList(list.id)
     }
-  }
-
-  // Timer handlers for tasks (placeholders for now)
-  const handleStartTimer = (task) => {
-    console.log('Start timer for task:', task)
-    // TODO: Implement timer functionality
-  }
-
-  const handlePauseTimer = (task) => {
-    console.log('Pause timer for task:', task)
-    // TODO: Implement timer functionality
-  }
-
-  const handleCompleteTask = (task) => {
-    console.log('Complete task:', task)
-    // TODO: Implement task completion with mental state and reflection
   }
 
   if (loading) {
@@ -116,7 +94,7 @@ const Dashboard = () => {
         <Group justify="space-between" align="flex-start">
           <div>
             <Title order={1} size="h1">Dashboard</Title>
-            <Text c="dimmed" size="lg" mt="xs">
+            <Text c="dimmed" size="md" mt="xs">
               {getCurrentDate()}
             </Text>
           </div>
@@ -134,7 +112,7 @@ const Dashboard = () => {
             size="md"
           />
 
-          <Group>
+          <Group spacing="sm">
             <Button
               leftSection={<IconFolder size={16} />}
               variant="outline"
@@ -203,17 +181,18 @@ const Dashboard = () => {
                 </Stack>
               </Box>
             ) : (
-              // Kanban-style Lists Grid
-              <Grid>
+              // Fixed 3-Column Layout like in screenshot
+              <Grid gutter="md">
                 {lists.map((list) => (
-                  <Grid.Col key={list.id} span={{ base: 12, sm: 6, md: 4, lg: 3 }}>
+                  <Grid.Col 
+                    key={list.id} 
+                    span={4} // Fixed 3 columns (12/3 = 4)
+                  >
                     <ListCard 
                       list={list}
                       onAddTask={handleAddTask}
-                      onView={handleViewList}
                       onEdit={handleEditList}
                       onDelete={handleDeleteList}
-                      onClick={handleViewList}
                     />
                   </Grid.Col>
                 ))}

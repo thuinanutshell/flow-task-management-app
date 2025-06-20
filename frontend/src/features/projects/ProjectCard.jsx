@@ -1,4 +1,3 @@
-// features/projects/ProjectCard.jsx
 import {
     ActionIcon,
     Badge,
