@@ -1,66 +1,69 @@
-// pages/Login.jsx
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Loader2 } from 'lucide-react'
+// pages/Login.jsx - Mantine version
+import {
+    Alert,
+    Button,
+    Container,
+    Group,
+    Paper,
+    PasswordInput,
+    SimpleGrid,
+    Stack,
+    Text,
+    TextInput,
+    Title
+} from '@mantine/core'
+import { useForm } from '@mantine/form'
+import { IconAlertCircle } from '@tabler/icons-react'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
 const Login = () => {
   const [isLoginMode, setIsLoginMode] = useState(true)
-  const [formData, setFormData] = useState({
-    login: '', // This will be email or username for login
-    email: '', // For registration
-    username: '', // For registration
-    password: '',
-    firstName: '', // For registration
-    lastName: '' // For registration
-  })
-  
   const { login, register, isLoading, error, clearError } = useAuth()
   const navigate = useNavigate()
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }))
-    
-    // Clear error when user starts typing
-    if (error) {
-      clearError()
+  const form = useForm({
+    initialValues: {
+      login: '',
+      email: '',
+      username: '',
+      password: '',
+      firstName: '',
+      lastName: ''
+    },
+    validate: {
+      email: isLoginMode ? undefined : (value) => 
+        /^\S+@\S+$/.test(value) ? null : 'Invalid email',
+      firstName: isLoginMode ? undefined : (value) => 
+        value.length > 0 ? null : 'First name is required',
+      lastName: isLoginMode ? undefined : (value) => 
+        value.length > 0 ? null : 'Last name is required',
+      username: isLoginMode ? undefined : (value) => 
+        value.length >= 3 ? null : 'Username must be at least 3 characters',
+      password: (value) => 
+        value.length >= 6 ? null : 'Password must be at least 6 characters'
     }
-  }
+  })
 
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-    
+  const handleSubmit = async (values) => {
     try {
       if (isLoginMode) {
-        // Login with email or username
         await login({
-          login: formData.login,
-          password: formData.password
+          login: values.login,
+          password: values.password
         })
       } else {
-        // Register new user
         await register({
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          email: formData.email,
-          username: formData.username,
-          password: formData.password
+          firstName: values.firstName,
+          lastName: values.lastName,
+          email: values.email,
+          username: values.username,
+          password: values.password
         })
       }
-      
-      // Redirect to dashboard on success
       navigate('/dashboard')
     } catch (err) {
-      // Error is already handled by the auth context
       console.error('Auth error:', err)
     }
   }
@@ -68,160 +71,117 @@ const Login = () => {
   const toggleMode = () => {
     setIsLoginMode(!isLoginMode)
     clearError()
-    // Reset form
-    setFormData({
-      login: '',
-      email: '',
-      username: '',
-      password: '',
-      firstName: '',
-      lastName: ''
-    })
+    form.reset()
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl text-center">
-            {isLoginMode ? 'Sign in to your account' : 'Create your account'}
-          </CardTitle>
-          <CardDescription className="text-center">
-            {isLoginMode 
-              ? 'Enter your credentials to access your tasks' 
-              : 'Fill in your information to get started'
-            }
-          </CardDescription>
-        </CardHeader>
-        
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+    <Container size={420} my={40}>
+      <Title ta="center" order={2}>
+        {isLoginMode ? 'Welcome back!' : 'Create account'}
+      </Title>
+      <Text c="dimmed" size="sm" ta="center" mt={5}>
+        {isLoginMode 
+          ? 'Enter your credentials to access your tasks' 
+          : 'Fill in your information to get started'
+        }
+      </Text>
+
+      <Paper withBorder shadow="md" p={30} mt={30} radius="md">
+        <form onSubmit={form.onSubmit(handleSubmit)}>
+          <Stack>
             {error && (
-              <Alert variant="destructive">
-                <AlertDescription>{error}</AlertDescription>
+              <Alert 
+                icon={<IconAlertCircle size="1rem" />} 
+                title="Error" 
+                color="red"
+                variant="light"
+              >
+                {error}
               </Alert>
             )}
-            
+
             {isLoginMode ? (
               // Login fields
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="login">Email or Username</Label>
-                  <Input
-                    id="login"
-                    name="login"
-                    type="text"
-                    required
-                    value={formData.login}
-                    onChange={handleInputChange}
-                    placeholder="Enter your email or username"
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
-                  <Input
-                    id="password"
-                    name="password"
-                    type="password"
-                    required
-                    value={formData.password}
-                    onChange={handleInputChange}
-                    placeholder="Enter your password"
-                  />
-                </div>
-              </div>
+              <>
+                <TextInput
+                  label="Email or Username"
+                  placeholder="Enter your email or username"
+                  required
+                  {...form.getInputProps('login')}
+                />
+                <PasswordInput
+                  label="Password"
+                  placeholder="Enter your password"
+                  required
+                  {...form.getInputProps('password')}
+                />
+              </>
             ) : (
               // Registration fields
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="firstName">First Name</Label>
-                    <Input
-                      id="firstName"
-                      name="firstName"
-                      type="text"
-                      required
-                      value={formData.firstName}
-                      onChange={handleInputChange}
-                      placeholder="First name"
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="lastName">Last Name</Label>
-                    <Input
-                      id="lastName"
-                      name="lastName"
-                      type="text"
-                      required
-                      value={formData.lastName}
-                      onChange={handleInputChange}
-                      placeholder="Last name"
-                    />
-                  </div>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    name="email"
-                    type="email"
+              <>
+                <SimpleGrid cols={2}>
+                  <TextInput
+                    label="First Name"
+                    placeholder="First name"
                     required
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    placeholder="Enter your email"
+                    {...form.getInputProps('firstName')}
                   />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="username">Username</Label>
-                  <Input
-                    id="username"
-                    name="username"
-                    type="text"
+                  <TextInput
+                    label="Last Name"
+                    placeholder="Last name"
                     required
-                    value={formData.username}
-                    onChange={handleInputChange}
-                    placeholder="Choose a username"
+                    {...form.getInputProps('lastName')}
                   />
-                </div>
+                </SimpleGrid>
                 
-                <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
-                  <Input
-                    id="password"
-                    name="password"
-                    type="password"
-                    required
-                    value={formData.password}
-                    onChange={handleInputChange}
-                    placeholder="Create a password"
-                  />
-                </div>
-              </div>
+                <TextInput
+                  label="Email"
+                  placeholder="Enter your email"
+                  required
+                  {...form.getInputProps('email')}
+                />
+                
+                <TextInput
+                  label="Username"
+                  placeholder="Choose a username"
+                  required
+                  {...form.getInputProps('username')}
+                />
+                
+                <PasswordInput
+                  label="Password"
+                  placeholder="Create a password"
+                  required
+                  {...form.getInputProps('password')}
+                />
+              </>
             )}
 
-            <Button type="submit" disabled={isLoading} className="w-full">
-              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {isLoading ? 'Loading...' : (isLoginMode ? 'Sign in' : 'Sign up')}
+            <Button 
+              type="submit" 
+              loading={isLoading}
+              fullWidth 
+              mt="xl"
+            >
+              {isLoginMode ? 'Sign in' : 'Sign up'}
             </Button>
 
-            <div className="text-center">
-              <Button
-                type="button"
-                variant="link"
+            <Group justify="center" mt="md">
+              <Button 
+                variant="subtle" 
                 onClick={toggleMode}
-                className="text-sm"
+                size="sm"
               >
-                {isLoginMode ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
+                {isLoginMode 
+                  ? "Don't have an account? Sign up" 
+                  : "Already have an account? Sign in"
+                }
               </Button>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
-    </div>
+            </Group>
+          </Stack>
+        </form>
+      </Paper>
+    </Container>
   )
 }
 

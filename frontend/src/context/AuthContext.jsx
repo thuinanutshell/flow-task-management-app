@@ -201,12 +201,12 @@ export const AuthProvider = ({ children }) => {
   // Update user profile
   const updateUserProfile = async (profileData) => {
     const response = await authService.updateProfile(profileData)
-
+    
     dispatch({
- type: ActionTypes.UPDATE_USER,
- payload: response.data
+      type: ActionTypes.UPDATE_USER,
+      payload: response.data
     })
-
+    
     return response
   }
 
