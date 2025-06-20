@@ -1,4 +1,13 @@
 # Flow - Your Ultimate Task Management App
+## Tech Stack
+### Client
+![React](https://img.shields.io/badge/react-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB)
+![JavaScript](https://img.shields.io/badge/javascript-%23323330.svg?style=for-the-badge&logo=javascript&logoColor=%23F7DF1E)
+![Mantine](https://img.shields.io/badge/Mantine-339AF0?style=for-the-badge&logo=mantine&logoColor=white)
+### Server
+![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)
+![Flask](https://img.shields.io/badge/flask-%23000.svg?style=for-the-badge&logo=flask&logoColor=white)
+![SQLite](https://img.shields.io/badge/sqlite-%2307405e.svg?style=for-the-badge&logo=sqlite&logoColor=white)
 
 ## Problem Statement
 We generate data every day - the data that helps us understand our behaviors and challenges better. I find the available task management tool lacking in the data collection and experimentation aspect. My goal with Flow is to address some problems I encounter when it comes to managing tasks or productivity. Because I believe it is such a waste not to make use of our daily data to become better.
@@ -19,7 +28,6 @@ Users can retrieve data to see statistics about their completion rate, estimatio
 Users can set up experiments to apply to certain types of tasks and measure the impact.
 
 ## Backend
-Tech Stack: Flask, Python, SQLite
 
 ### Folder Structure
 ```
@@ -62,8 +70,6 @@ backend/
 ### REST APIs
 
 ## Frontend
-
-Tech Stack: React-Vite, Mantine, JavaScript
 
 ### User Flow
 
