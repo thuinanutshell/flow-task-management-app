@@ -98,8 +98,8 @@ const ListCard = ({
         height: '600px',
         display: 'flex',
         flexDirection: 'column',
-        backgroundColor: isWorkspaceList ? '#f0f8ff' : '#f8f9fa',
-        border: isWorkspaceList ? '2px solid #e3f2fd' : '1px solid #dee2e6'
+        backgroundColor: '#f8f9fa',
+        border: '1px solid #dee2e6'
       }}
     >
       {/* List Header */}
@@ -115,19 +115,7 @@ const ListCard = ({
             <Text fw={600} size="md" lineClamp={1}>
               {list.name}
             </Text>
-            {isWorkspaceList && (
-              <Badge size="xs" color="blue" variant="light">
-                Workspace
-              </Badge>
-            )}
           </Group>
-          
-          {/* Project Information for Workspace Lists */}
-          {isWorkspaceList && (list.project_name || list.originalProjectName) && (
-            <Text size="xs" c="dimmed" lineClamp={1}>
-              From: {list.project_name || list.originalProjectName}
-            </Text>
-          )}
         </Stack>
 
         {/* Action Buttons */}
@@ -233,31 +221,6 @@ const ListCard = ({
           )}
         </Stack>
       </ScrollArea>
-
-      {/* List Stats Footer */}
-      <Box
-        p="sm"
-        style={{
-          borderTop: '1px solid #dee2e6',
-          backgroundColor: isWorkspaceList ? '#e3f2fd' : '#ffffff'
-        }}
-      >
-        <Group justify="space-between" align="center">
-          <Text size="xs" c="dimmed">
-            {list.completed_tasks || 0} / {list.total_tasks || 0} tasks
-          </Text>
-          <Group spacing="xs">
-            <Text size="xs" c="dimmed">
-              {progressPercentage}%
-            </Text>
-            {isWorkspaceList && (
-              <Badge size="xs" variant="dot" color="blue">
-                Synced
-              </Badge>
-            )}
-          </Group>
-        </Group>
-      </Box>
     </Paper>
   )
 }
