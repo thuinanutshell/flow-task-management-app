@@ -1,4 +1,3 @@
-// services/tasks.js
 import api, { apiCall } from './api'
 
 class TaskService {
@@ -21,10 +20,10 @@ class TaskService {
     return apiCall(() => api.get(`/task/${taskId}`))
   }
 
-  // Update a task
+  // Update a task (note: /task/ not /tasks/)
   async updateTask(taskId, updateData) {
     return apiCall(() => 
-      api.patch(`/tasks/${taskId}`, {
+      api.patch(`/task/${taskId}`, {
         name: updateData.name,
         description: updateData.description,
         priority: updateData.priority,
@@ -45,13 +44,13 @@ class TaskService {
   }
 
   // ===============================
-  // TIMER ENDPOINTS
+  // TIMER ENDPOINTS (CORRECTED)
   // ===============================
 
-  // Start work session (handles start/resume/extend)
+  // Start work session (handles start/resume)
   async startWorkSession(taskId, durationMinutes) {
     return apiCall(() => 
-      api.post(`/tasks/${taskId}/timer/work`, {
+      api.post(`/task/${taskId}/timer/work`, {
         duration_minutes: durationMinutes
       })
     )
@@ -59,13 +58,13 @@ class TaskService {
 
   // Pause active timer
   async pauseTimer(taskId) {
-    return apiCall(() => api.post(`/tasks/${taskId}/timer/pause`))
+    return apiCall(() => api.post(`/task/${taskId}/timer/pause`))
   }
 
   // Complete task (requires mental_state and reflection)
   async completeTask(taskId, mentalState, reflection) {
     return apiCall(() => 
-      api.post(`/tasks/${taskId}/timer/complete`, {
+      api.post(`/task/${taskId}/timer/complete`, {
         mental_state: mentalState,
         reflection: reflection
       })
@@ -75,6 +74,11 @@ class TaskService {
   // Get timer status for a task
   async getTimerStatus(taskId) {
     return apiCall(() => api.get(`/task/${taskId}/timer/status`))
+  }
+
+  // Check if timer has expired
+  async checkTimerExpired(taskId) {
+    return apiCall(() => api.get(`/task/${taskId}/timer/expired`))
   }
 
   // Poll timer status (lightweight for frequent updates)

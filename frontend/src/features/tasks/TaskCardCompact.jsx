@@ -1,4 +1,3 @@
-// features/tasks/TaskCardCompact.jsx
 import {
     Badge,
     Button,
@@ -16,21 +15,20 @@ import { useState } from 'react'
 import { useTimer } from '../../context/TimerContext'
 import CompleteTaskModal from './CompleteTaskModal'
 
-const TaskCardCompact = ({ 
+const TaskCardCompact = ({
   task,
   onUpdate
 }) => {
   const [completeModalOpen, setCompleteModalOpen] = useState(false)
-  const { 
-    activeTask, 
-    isTimerActive, 
-    timerState, 
-    startTimer, 
-    pauseTimer, 
+  const {
+    activeTask,
+    isTimerActive,
+    startTimer,
+    pauseTimer,
     completeTask,
     getFormattedTimeRemaining
   } = useTimer()
-  
+
   // Check if this task is the active one
   const isActiveTask = activeTask?.id === task.id
   const isThisTaskActive = isActiveTask && isTimerActive
@@ -61,7 +59,7 @@ const TaskCardCompact = ({
     if (isThisTaskActive) {
       return `Active - ${getFormattedTimeRemaining()}`
     }
-    return status.split('_').map(word => 
+    return status.split('_').map(word =>
       word.charAt(0).toUpperCase() + word.slice(1)
     ).join(' ')
   }
@@ -91,23 +89,14 @@ const TaskCardCompact = ({
   const handleCompleteSubmit = async (mentalState, reflection) => {
     try {
       await completeTask(mentalState, reflection)
-      if (onUpdate) onUpdate()
       setCompleteModalOpen(false)
+      if (onUpdate) onUpdate()
     } catch (error) {
       console.error('Failed to complete task:', error)
     }
   }
 
   const renderActionButton = () => {
-    // If another task is active, disable actions for this task
-    if (isTimerActive && !isActiveTask) {
-      return (
-        <Badge color="gray" variant="light" size="xs">
-          Locked
-        </Badge>
-      )
-    }
-
     switch (task.status) {
       case 'not_started':
       case 'paused':
@@ -122,7 +111,7 @@ const TaskCardCompact = ({
             {task.status === 'not_started' ? 'Start Now' : 'Resume'}
           </Button>
         )
-      
+
       case 'active':
         return (
           <Group spacing="xs">
@@ -144,7 +133,7 @@ const TaskCardCompact = ({
             </Button>
           </Group>
         )
-      
+
       case 'done':
         return (
           <Badge color="green" variant="light" size="sm">
@@ -152,7 +141,7 @@ const TaskCardCompact = ({
             Completed
           </Badge>
         )
-      
+
       default:
         return null
     }
@@ -160,11 +149,11 @@ const TaskCardCompact = ({
 
   return (
     <>
-      <Paper 
-        p="sm" 
-        radius="md" 
+      <Paper
+        p="sm"
+        radius="md"
         withBorder
-        style={{ 
+        style={{
           backgroundColor: isThisTaskActive ? '#e3f2fd' : 'white',
           cursor: 'pointer',
           transition: 'all 0.2s ease',
@@ -184,9 +173,9 @@ const TaskCardCompact = ({
                 </Text>
               )}
             </div>
-            
-            <Badge 
-              color={getPriorityColor(task.priority)} 
+
+            <Badge
+              color={getPriorityColor(task.priority)}
               size="xs"
               variant="filled"
             >
@@ -196,14 +185,14 @@ const TaskCardCompact = ({
 
           {/* Status and Action */}
           <Group justify="space-between" align="center">
-            <Badge 
-              color={getStatusColor(task.status)} 
+            <Badge
+              color={getStatusColor(task.status)}
               variant="light"
               size="xs"
             >
               {formatStatus(task.status)}
             </Badge>
-            
+
             {task.status !== 'done' && (
               <div>
                 {renderActionButton()}

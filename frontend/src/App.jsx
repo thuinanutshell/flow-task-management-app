@@ -3,6 +3,7 @@ import { AuthProvider, useAuth } from './context/AuthContext'
 
 // Import your page components
 import Layout from './components/layout/Layout'
+import ProjectDetailView from './features/projects/ProjectDetailView'
 import Analytics from './pages/Analytics'
 import Calendar from './pages/Calendar'
 import Dashboard from './pages/Dashboard'
@@ -67,26 +68,37 @@ function AppRoutes() {
           } 
         />
         
-        <Route 
-          path="/projects" 
+        <Route
+          path="/projects"
           element={
             <ProtectedRoute>
               <Layout>
                 <Projects />
               </Layout>
             </ProtectedRoute>
-          } 
+          }
         />
-        
-        <Route 
-          path="/calendar" 
+
+        <Route
+          path="/projects/:projectId"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <ProjectDetailView />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/calendar"
           element={
             <ProtectedRoute>
               <Layout>
                 <Calendar />
               </Layout>
             </ProtectedRoute>
-          } 
+          }
         />
         
         <Route 
