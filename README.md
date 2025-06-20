@@ -1,13 +1,26 @@
 # Flow - Your Ultimate Task Management App
+## Table of Contents
+
+- [Tech Stack](#tech-stack)
+- [Problem Statement](#problem-statement)
+- [Features](#features)
+- [Backend](#backend)
+- [Frontend](#frontend)
+
 ## Tech Stack
 ### Client
 ![React](https://img.shields.io/badge/react-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB)
 ![JavaScript](https://img.shields.io/badge/javascript-%23323330.svg?style=for-the-badge&logo=javascript&logoColor=%23F7DF1E)
 ![Mantine](https://img.shields.io/badge/Mantine-339AF0?style=for-the-badge&logo=mantine&logoColor=white)
+
+At first, I wanted to use Shadcn UI for the pre-built components, but because it is built with TypeScript, I had some trouble setting it up and keeping things compatible. As a result, I decided to use a library more compatible with React-Vite and JavaScript;
+
 ### Server
 ![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)
 ![Flask](https://img.shields.io/badge/flask-%23000.svg?style=for-the-badge&logo=flask&logoColor=white)
 ![SQLite](https://img.shields.io/badge/sqlite-%2307405e.svg?style=for-the-badge&logo=sqlite&logoColor=white)
+
+Given the scope of the project (which is small-medium size), I decided to use a lightweight framework like Flask and a serverless database like SQLite. I am most comfortable with Python, so I chose it as the language for the backend. When the project scales, I'm considering using a more scalable database like PostgreSQL and the FastAPI framework.
 
 ## Problem Statement
 We generate data every day - the data that helps us understand our behaviors and challenges better. I find the available task management tool lacking in the data collection and experimentation aspect. My goal with Flow is to address some problems I encounter when it comes to managing tasks or productivity. Because I believe it is such a waste not to make use of our daily data to become better.
