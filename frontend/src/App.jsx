@@ -6,6 +6,7 @@ import Layout from './components/layout/Layout'
 import ProjectDetailView from './features/projects/ProjectDetailView'
 import Analytics from './pages/Analytics'
 import Calendar from './pages/Calendar'
+import Categories from './pages/Categories'
 import Dashboard from './pages/Dashboard'
 import Experiments from './pages/Experiments'
 import Login from './pages/Login'
@@ -85,6 +86,17 @@ function AppRoutes() {
             <ProtectedRoute>
               <Layout>
                 <ProjectDetailView />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/categories"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <Categories />
               </Layout>
             </ProtectedRoute>
           }

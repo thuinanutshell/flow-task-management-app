@@ -1,19 +1,13 @@
 import {
-    ActionIcon,
     Badge,
     Card,
     Group,
-    Menu,
     Stack,
     Text
 } from '@mantine/core'
 import {
     IconClock,
-    IconDots,
-    IconEdit,
-    IconEye,
-    IconList,
-    IconTrash
+    IconList
 } from '@tabler/icons-react'
 
 const ProjectCard = ({ 
@@ -72,57 +66,6 @@ const ProjectCard = ({
             >
               {formatStatus(project.status)}
             </Badge>
-            
-            <Menu shadow="md" width={200}>
-              <Menu.Target>
-                <ActionIcon 
-                  variant="subtle" 
-                  color="gray"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <IconDots size={16} />
-                </ActionIcon>
-              </Menu.Target>
-
-              <Menu.Dropdown>
-                {onView && (
-                  <Menu.Item 
-                    leftSection={<IconEye size={14} />}
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      onView(project)
-                    }}
-                  >
-                    View Details
-                  </Menu.Item>
-                )}
-                
-                {onEdit && (
-                  <Menu.Item 
-                    leftSection={<IconEdit size={14} />}
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      onEdit(project)
-                    }}
-                  >
-                    Edit Project
-                  </Menu.Item>
-                )}
-                
-                {onDelete && (
-                  <Menu.Item 
-                    leftSection={<IconTrash size={14} />}
-                    color="red"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      onDelete(project)
-                    }}
-                  >
-                    Delete Project
-                  </Menu.Item>
-                )}
-              </Menu.Dropdown>
-            </Menu>
           </Group>
         </Group>
 

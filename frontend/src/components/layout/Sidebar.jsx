@@ -16,6 +16,7 @@ import {
     IconLogout,
     IconMenu2,
     IconSettings,
+    IconTag,
     IconX
 } from '@tabler/icons-react'
 import { useLocation, useNavigate } from 'react-router-dom'
@@ -34,6 +35,12 @@ const navigationItems = [
     icon: IconBookmark, 
     href: '/projects',
     color: 'green'
+  },
+  { 
+    label: 'Categories', 
+    icon: IconTag, 
+    href: '/categories',
+    color: 'violet'
   },
   { 
     label: 'Calendar', 

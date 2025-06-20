@@ -24,7 +24,6 @@ const TaskCardCompact = ({
   const { 
     activeTask, 
     isTimerActive, 
-    timerState, 
     startTimer, 
     pauseTimer, 
     completeTask,
