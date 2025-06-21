@@ -134,7 +134,7 @@ backend/
 ## Frontend
 
 ### User Flow
-![user_flow](https://github.com/user-attachments/assets/fef0b9b2-2719-4bcc-a50d-313e31de66c9)
+![crud_user_flow](https://github.com/user-attachments/assets/bb467c9d-79b4-470d-ba24-52bfb8937b1c)
 
 
 ### Folder Structure
