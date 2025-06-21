@@ -1,6 +1,4 @@
 # Flow - Your Ultimate Task Management App
-## Table of Contents
-
 - [Tech Stack](#tech-stack)
 - [Problem Statement](#problem-statement)
 - [Features](#features)
