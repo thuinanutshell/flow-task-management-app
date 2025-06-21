@@ -74,6 +74,7 @@ backend/
 ```
 
 ### Database Design
+![Editor _ Mermaid Chart-2025-06-21-021004](https://github.com/user-attachments/assets/e7ae84d6-0ab4-4367-b5c9-388221bfb518)
 
 ### REST APIs
 #### Authentication Endpoints
