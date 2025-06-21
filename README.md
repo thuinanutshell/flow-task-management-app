@@ -193,7 +193,10 @@ frontend/
 │   └── theme.js
 ```
 
-### Services/Hooks
+## 🏗️ Under Development
+- Analytics dashboard to show statistics about total completed tasks, accuracy estimation rate, time spent on different types of tasks, and AI-powered insights generation
+- Experiments that allow users to conduct productivity-related experiments such as time estimation multiplier, practice to improve mental state.
+
 
 
 
