@@ -42,11 +42,12 @@ Users can set up experiments to apply to certain types of tasks and measure the 
 
 ## Backend
 
-### Folder Structure
+### Folder Structure (Application Factory Pattern)
 ```
 backend/
 ├── app/
 │   ├── api/
+│   │   ├── __init__.py
 │   │   ├── auth.py
 │   │   ├── categories.py
 │   │   ├── lists.py
