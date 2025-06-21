@@ -4,6 +4,8 @@
 - [Features](#features)
 - [Backend](#backend)
 - [Frontend](#frontend)
+- [Under Development](#under-development)
+- [Usage](#usage)
 
 ## Tech Stack
 ### Client
@@ -194,14 +196,17 @@ frontend/
 │   └── theme.js
 ```
 
-## 🏗️ Under Development
+## Under Development
 - Analytics dashboard to show statistics about total completed tasks, accuracy estimation rate, time spent on different types of tasks, and AI-powered insights generation
-- Experiments that allow users to conduct productivity-related experiments such as time estimation multiplier, practice to improve mental state.
+- Experiments that allow users to conduct productivity-related experiments, such as time estimation multiplier, and practice to improve mental state.
 
-
-
-
-
+## Usage
+1. Create a virtual environment
+2. Create a backend folder
+3. Activate the virtual environment
+4. Create a `.env` file inside the backend folder
+5. Run the backend
+6. Run the frontend
 
 
 
