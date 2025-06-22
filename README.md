@@ -23,6 +23,10 @@ At first, I wanted to use Shadcn UI for the pre-built components, but because it
 
 Given the scope of the project (which is [small-medium size](https://sqlite.org/features.html)), I decided to use a lightweight framework like Flask and a serverless database like SQLite. I am most comfortable with Python, so I chose it as the language for the backend. When the project scales, I'm considering using a more scalable database like PostgreSQL and the FastAPI framework.
 
+
+https://github.com/user-attachments/assets/ce525632-2082-4ee3-88e1-b2ad203a66e2
+
+
 ## Problem Statement
 We generate data every day - the data that helps us understand our behaviors and challenges better. I find the available task management tool lacking in the data collection and experimentation aspect. My goal with Flow is to address some problems I encounter when it comes to managing tasks or productivity. Because I believe it is such a waste not to make use of our daily data to become better.
 - **Poor time estimation** of how long a task would take (either overestimating easy tasks or underestimating difficult tasks)
