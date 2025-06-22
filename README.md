@@ -214,7 +214,9 @@ frontend/
 6. Run the frontend
 
 ## Key Learnings
-- Having clear user stories and user flow is so important that I couldn't emphasize it enough, even more so now that we have AI assistants. At some point, I myself wasn't so sure about the timer user flow, and I made a mistake by asking AI to suggest the code structure I could follow. But then, I took a step back and asked myself: Was the way I explained the flow clear enough? And do I really understand it? Then I chose the traditional way, using a pen and paper to draw out the interactions on the frontend. As a result, I could explain the context much better to the LLM and decided on a solution that was way simpler.
+- Having clear user stories and user flow is so important that I couldn't emphasize it enough, even more so now that we have AI assistants. At some point, I myself wasn't so sure about the timer user flow, and I made a mistake by asking AI to suggest the code structure I could follow. But then, I took a step back and asked myself: Was the way I explained the flow clear enough? And do I really understand it? Then I chose the traditional way, using a pen and paper to draw out the interactions on the frontend. As a result, I could explain the context much better to the LLM and decided on a solution that was way simpler. Specifically, I was faced with two design options:
+  - To create a separate table to store the time sessions - basically, when a user starts a timer, that counts as a session - this idea came from the fact that there are two buttons on the frontend - start and resume, which I thought might need two separate logics for the endpoints.
+  - To create a logic in the Tasks table for continuous updates, like cumulatively adding more time when the user resumes the timer again. I decided to go with the second one because it is easy to understand, and it turned out that the Start and Resume buttons can use the same endpoint since the key idea is to **keep adding the time the user has worked**
 
 
 
