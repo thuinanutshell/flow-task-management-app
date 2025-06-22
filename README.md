@@ -5,7 +5,8 @@
 - [Backend](#backend)
 - [Frontend](#frontend)
 - [Under Development](#under-development)
-- [Usage](#usage)
+- [Usage Guide](#usage-guide)
+- [Key Learnings](#key-learnings)
 
 ## Tech Stack
 ### Client
@@ -204,7 +205,7 @@ frontend/
 - Analytics dashboard to show statistics about total completed tasks, accuracy estimation rate, time spent on different types of tasks, and AI-powered insights generation
 - Experiments that allow users to conduct productivity-related experiments, such as time estimation multiplier, and practice to improve mental state.
 
-## Usage
+## Usage Guide
 1. Create a virtual environment
 2. Create a backend folder
 3. Activate the virtual environment
@@ -212,6 +213,8 @@ frontend/
 5. Run the backend
 6. Run the frontend
 
+## Key Learnings
+- Having clear user stories and user flow is so important that I couldn't emphasize it enough, even more so now that we have AI assistants. At some point, I myself wasn't so sure about the timer user flow, and I made a mistake by asking AI to suggest the code structure I could follow. But then, I took a step back and asked myself: Was the way I explained the flow clear enough? And do I really understand it? Then I chose the traditional way, using a pen and paper to draw out the interactions on the frontend. As a result, I could explain the context much better to the LLM and decided on a solution that was way simpler.
 
 
 
