@@ -1,5 +1,12 @@
 # Import the database instance first
-from .base import db, TaskStatus, TaskPriority, MentalState
+from .base import (
+    db,
+    TaskStatus,
+    TaskPriority,
+    MentalState,
+    ExperimentStatus,
+    ProjectStatus,
+)
 
 # Import all models
 from .user import Users, Authentications
@@ -25,6 +32,8 @@ __all__ = [
     "TaskStatus",
     "TaskPriority",
     "MentalState",
+    "ExperimentStatus",
+    "ProjectStatus",
     # User models
     "Users",
     "Authentications",
