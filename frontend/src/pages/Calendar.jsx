@@ -1,15 +1,19 @@
-import { Card, Container, Text, Title } from '@mantine/core'
+import { Container, Stack, Text, Title } from '@mantine/core'
+import SimpleCalendar from '../components/SimpleCalendar'
 
 const Calendar = () => {
   return (
     <Container size="xl">
-      <Title order={1} mb="md">Calendar</Title>
-      <Card shadow="sm" padding="lg" radius="md" withBorder>
-        <Text>Calendar page - Coming soon!</Text>
-        <Text size="sm" c="dimmed" mt="sm">
-          This is where you'll view your scheduled tasks and deadlines.
-        </Text>
-      </Card>
+      <Stack spacing="lg">
+        <div>
+          <Title order={1}>Calendar</Title>
+          <Text c="dimmed" size="lg" mt="xs">
+            Track your daily task completion rates
+          </Text>
+        </div>
+        
+        <SimpleCalendar />
+      </Stack>
     </Container>
   )
 }

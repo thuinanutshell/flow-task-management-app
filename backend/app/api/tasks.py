@@ -126,7 +126,6 @@ def get_task(task_id):
 @task_bp.route("/<int:task_id>", methods=["PATCH"])
 @jwt_required()
 def update_task(task_id):
-    """Update a task"""
     try:
         data = request.get_json()
 
@@ -202,10 +201,6 @@ def delete_task(task_id):
 def start_or_resume_timer(task_id):
     """Start timer for new task OR resume timer for paused task"""
     try:
-        # Log raw request data for debugging
-        current_app.logger.debug(f"Request data: {request.data}")
-        current_app.logger.debug(f"Content-Type: {request.headers.get('Content-Type')}")
-        
         try:
             data = request.get_json()
             if data is None:
@@ -245,7 +240,6 @@ def start_or_resume_timer(task_id):
 @task_bp.route("/<int:task_id>/timer/pause", methods=["POST"])
 @jwt_required()
 def pause_timer(task_id):
-    """Pause active timer"""
     try:
         task_service = TaskService(db)
         pause_info = task_service.pause_timer(task_id)
@@ -381,6 +375,35 @@ def get_task_create_options():
         )
     except Exception as e:
         current_app.logger.error(f"Get task options error: {str(e)}")
+        return create_response(
+            False, "Unable to process request. Please try again.", status=500
+        )
+
+
+@task_bp.route("/<int:task_id>/timer/extend", methods=["POST"])
+@jwt_required()
+def extend_timer(task_id):
+    """Extend active timer with additional minutes"""
+    try:
+        data = request.get_json()
+
+        if not data or "additional_minutes" not in data:
+            return create_response(False, "additional_minutes is required", status=400)
+
+        additional_minutes = data["additional_minutes"]
+        if not isinstance(additional_minutes, int) or additional_minutes <= 0:
+            return create_response(
+                False, "additional_minutes must be a positive integer", status=400
+            )
+
+        task_service = TaskService(db)
+        timer_info = task_service.extend_timer(task_id, additional_minutes)
+
+        return create_response(message="Timer extended successfully", data=timer_info)
+    except ValueError as e:
+        return create_response(False, str(e), status=400)
+    except Exception as e:
+        current_app.logger.error(f"Extend timer error: {str(e)}")
         return create_response(
             False, "Unable to process request. Please try again.", status=500
         )

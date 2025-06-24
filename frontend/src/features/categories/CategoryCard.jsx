@@ -114,17 +114,6 @@ const CategoryCard = ({
             </Text>
           </Group>
         </Group>
-
-        {/* Task completion badge if category has tasks */}
-        {category.task_count > 0 && (
-          <Badge 
-            color={category.color} 
-            variant="light"
-            size="sm"
-          >
-            {Math.round(((category.completed_task_count || 0) / category.task_count) * 100)}% complete
-          </Badge>
-        )}
       </Stack>
     </Card>
   )

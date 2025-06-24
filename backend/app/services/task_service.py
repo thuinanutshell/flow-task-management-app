@@ -64,7 +64,6 @@ class TaskService:
         return new_task
 
     def read_one_task(self, taskId: int) -> Optional[Tasks]:
-        """Retrieve a task by ID"""
         task = Tasks.query.filter_by(id=taskId).first()
         return task
 
@@ -397,3 +396,30 @@ class TaskService:
         list_item.progress = list_item.calculate_progress()
         list_item.updated_at = get_utc_now()
         self.db.session.commit()
+
+    def extend_timer(self, task_id: int, additional_minutes: int) -> Dict[str, Any]:
+        """Extend current active timer with additional minutes"""
+        task = Tasks.query.filter_by(id=task_id).first()
+        if not task:
+            raise ValueError("Task not found")
+
+        if not task.is_timer_active:
+            raise ValueError("No active timer to extend")
+
+        if additional_minutes <= 0:
+            raise ValueError("Additional minutes must be greater than 0")
+
+        # Extend the planned end time
+        task.current_planned_end += timedelta(minutes=additional_minutes)
+        task.updated_at = get_utc_now()
+        self.db.session.commit()
+
+        return {
+            "task_id": task_id,
+            "current_planned_end": task.current_planned_end.isoformat(),
+            "additional_minutes": additional_minutes,
+            "remaining_minutes": task.current_session_remaining_minutes,
+            "elapsed_minutes": task.current_session_elapsed_minutes,
+            "status": task.status.value,
+            "is_expired": task.is_timer_expired,
+        }

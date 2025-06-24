@@ -31,24 +31,12 @@ def serialize_project(project, include_summary=True):
     }
 
     if include_summary:
-        # Calculate project summary statistics
-        total_lists = len(project.lists)
-        total_tasks = sum(len(list_item.tasks) for list_item in project.lists)
-        completed_tasks = sum(
-            len([t for t in list_item.tasks if t.status == TaskStatus.DONE])
-            for list_item in project.lists
-        )
-
-        project_progress = 0.0
-        if total_tasks > 0:
-            project_progress = completed_tasks / total_tasks
-
         project_data.update(
             {
-                "total_lists": total_lists,
-                "total_tasks": total_tasks,
-                "completed_tasks": completed_tasks,
-                "progress": round(project_progress, 2),
+                "total_lists": project.list_count,
+                "total_tasks": project.total_tasks,
+                "completed_tasks": project.completed_tasks,
+                "progress": project.progress,
             }
         )
 
@@ -150,7 +138,6 @@ def retrieve_one_project(project_id):
 @project_bp.route("/<int:project_id>", methods=["PATCH"])
 @jwt_required()
 def update_one_project(project_id):
-    """Update a project"""
     try:
         data = request.get_json()
 
@@ -223,26 +210,6 @@ def get_project_summary(project_id):
         )
     except Exception as e:
         current_app.logger.error(f"Get project summary error: {str(e)}")
-        return create_response(
-            False, "Unable to process request. Please try again.", status=500
-        )
-
-
-@project_bp.route("/<int:project_id>/lists", methods=["GET"])
-@jwt_required()
-def get_project_lists_endpoint(project_id):
-    """Get all lists for a specific project (alternative endpoint)"""
-    try:
-        project_service = ProjectService(db)
-        lists_data = project_service.get_project_lists(project_id)
-
-        return create_response(
-            message="Retrieved project lists successfully", data=lists_data
-        )
-    except ValueError as e:
-        return create_response(False, str(e), status=400)
-    except Exception as e:
-        current_app.logger.error(f"Get project lists error: {str(e)}")
         return create_response(
             False, "Unable to process request. Please try again.", status=500
         )
