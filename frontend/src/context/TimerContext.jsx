@@ -26,7 +26,6 @@ const TimerStates = {
   ACTIVE: 'active',       // Timer running
   PAUSED: 'paused',       // Timer paused
   DONE: 'done',          // Task completed
-  EXPIRED: 'expired'      // Timer expired, needs user action
 }
 
 // Initial state
@@ -39,7 +38,8 @@ const initialState = {
   sessionDuration: 0,      // planned session duration in minutes
   currentWorkStart: null,  // when current session started
   currentPlannedEnd: null, // when current session should end
-  isExpired: false
+  isExpired: false,
+  showExpirationModal: false // Control expiration modal
 }
 
 // Action types
@@ -49,7 +49,8 @@ const ActionTypes = {
   PAUSE_TIMER: 'PAUSE_TIMER',
   COMPLETE_TIMER: 'COMPLETE_TIMER',
   RESET_TIMER: 'RESET_TIMER',
-  TIMER_EXPIRED: 'TIMER_EXPIRED',
+  EXTEND_TIMER: 'EXTEND_TIMER',
+  HIDE_EXPIRATION_MODAL: 'HIDE_EXPIRATION_MODAL',
   SYNC_WITH_BACKEND: 'SYNC_WITH_BACKEND'
 }
 
@@ -67,7 +68,8 @@ const timerReducer = (state, action) => {
         totalTimeWorked: action.payload.total_time_worked,
         currentWorkStart: action.payload.current_work_start,
         currentPlannedEnd: action.payload.current_planned_end,
-        isExpired: false
+        isExpired: false,
+        showExpirationModal: false
       }
 
     case ActionTypes.UPDATE_TIMER: {
@@ -75,12 +77,14 @@ const timerReducer = (state, action) => {
       
       const newElapsed = state.elapsedTime + 1
       const newRemaining = Math.max(0, state.timeRemaining - 1)
+      const willExpire = newRemaining === 0 && !state.isExpired
 
       return {
         ...state,
         elapsedTime: newElapsed,
         timeRemaining: newRemaining,
-        isExpired: newRemaining === 0
+        isExpired: willExpire,
+        showExpirationModal: willExpire
       }
     }
 
@@ -90,7 +94,9 @@ const timerReducer = (state, action) => {
         timerState: TimerStates.PAUSED,
         totalTimeWorked: action.payload.total_time_worked,
         currentWorkStart: null,
-        currentPlannedEnd: null
+        currentPlannedEnd: null,
+        isExpired: false,
+        showExpirationModal: false
       }
     }
 
@@ -101,16 +107,27 @@ const timerReducer = (state, action) => {
         totalTimeWorked: action.payload.total_time_worked,
         currentWorkStart: null,
         currentPlannedEnd: null,
-        timeRemaining: 0
+        timeRemaining: 0,
+        isExpired: false,
+        showExpirationModal: false
       }
     }
 
-    case ActionTypes.TIMER_EXPIRED: {
+    case ActionTypes.EXTEND_TIMER: {
       return {
         ...state,
-        timerState: TimerStates.EXPIRED,
-        timeRemaining: 0,
-        isExpired: true
+        timeRemaining: action.payload.additionalMinutes * 60,
+        sessionDuration: state.sessionDuration + action.payload.additionalMinutes,
+        isExpired: false,
+        showExpirationModal: false,
+        currentPlannedEnd: action.payload.newPlannedEnd
+      }
+    }
+
+    case ActionTypes.HIDE_EXPIRATION_MODAL: {
+      return {
+        ...state,
+        showExpirationModal: false
       }
     }
 
@@ -162,21 +179,12 @@ export const TimerProvider = ({ children }) => {
     }
   }, [state.timerState, state.isExpired])
 
-  // Handle timer expiration
+  // Handle timer expiration - Play sound when timer expires
   useEffect(() => {
-    if (state.isExpired && state.timerState === TimerStates.ACTIVE) {
-      dispatch({ type: ActionTypes.TIMER_EXPIRED })
-
+    if (state.isExpired && state.timerState === TimerStates.ACTIVE && state.showExpirationModal) {
       playBeep()
-      
-      notifications.show({
-        title: 'Timer Completed!',
-        message: `Time's up for "${state.activeTask?.name}". Ready to complete the task?`,
-        color: 'orange',
-        autoClose: false
-      })
     }
-  }, [state.isExpired, state.timerState, state.activeTask])
+  }, [state.isExpired, state.timerState, state.showExpirationModal])
 
   // Start timer for a task
   const startTimer = async (task, durationMinutes = null) => {
@@ -213,6 +221,10 @@ export const TimerProvider = ({ children }) => {
     try {
       if (!state.activeTask) return
       
+      if (state.timerState !== TimerStates.ACTIVE) {
+        throw new Error("No active timer to pause")
+      }
+      
       const response = await taskService.pauseTimer(state.activeTask.id)
       
       dispatch({
@@ -240,6 +252,18 @@ export const TimerProvider = ({ children }) => {
     try {
       if (!state.activeTask) return
       
+      if (state.timerState !== TimerStates.ACTIVE) {
+        throw new Error("No active timer to complete")
+      }
+
+      // Validate mandatory fields
+      if (!mentalState || !mentalState.trim()) {
+        throw new Error("Mental state is required when completing a task")
+      }
+      if (!reflection || !reflection.trim()) {
+        throw new Error("Reflection is required when completing a task")
+      }
+
       const response = await taskService.completeTask(
         state.activeTask.id, 
         mentalState, 
@@ -264,6 +288,41 @@ export const TimerProvider = ({ children }) => {
       })
       throw error
     }
+  }
+
+  // Continue/extend timer when expired
+  const continueTimer = async (additionalMinutes) => {
+    try {
+      if (!state.activeTask) return
+      
+      const response = await taskService.extendTimer(state.activeTask.id, additionalMinutes)
+      
+      dispatch({
+        type: ActionTypes.EXTEND_TIMER,
+        payload: {
+          additionalMinutes,
+          newPlannedEnd: response.data.current_planned_end
+        }
+      })
+      
+      notifications.show({
+        title: 'Timer Extended',
+        message: `Added ${additionalMinutes} more minutes to "${state.activeTask.name}"`,
+        color: 'blue'
+      })
+    } catch (error) {
+      notifications.show({
+        title: 'Error',
+        message: error.message || 'Failed to extend timer',
+        color: 'red'
+      })
+      throw error
+    }
+  }
+
+  // Hide expiration modal
+  const hideExpirationModal = () => {
+    dispatch({ type: ActionTypes.HIDE_EXPIRATION_MODAL })
   }
 
   // Reset timer
@@ -292,7 +351,7 @@ export const TimerProvider = ({ children }) => {
       try {
         const response = await taskService.checkTimerExpired(state.activeTask.id)
         if (response.data.is_expired && !state.isExpired) {
-          dispatch({ type: ActionTypes.TIMER_EXPIRED })
+          dispatch({ type: ActionTypes.UPDATE_TIMER })
         }
       } catch (error) {
         console.error('Failed to check timer expiration:', error)
@@ -314,12 +373,15 @@ export const TimerProvider = ({ children }) => {
     totalTimeWorked: state.totalTimeWorked,
     sessionDuration: state.sessionDuration,
     isExpired: state.isExpired,
+    showExpirationModal: state.showExpirationModal,
     isTimerActive: state.timerState === TimerStates.ACTIVE,
     
     // Actions
     startTimer,
     pauseTimer,
     completeTask,
+    continueTimer,
+    hideExpirationModal,
     resetTimer,
     syncWithBackend,
     

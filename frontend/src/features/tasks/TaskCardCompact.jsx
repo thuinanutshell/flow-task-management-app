@@ -24,6 +24,7 @@ import { useTasks } from '../../hooks/useTasks'
 import CompleteTaskModal from './CompleteTaskModal'
 import EditTaskModal from './EditTaskModal'
 import TaskDetailModal from './TaskDetailModal'
+import TimerExpirationModal from './TimerExpirationModal'
 
 const TaskCardCompact = ({
   task,
@@ -39,6 +40,10 @@ const TaskCardCompact = ({
     startTimer,
     pauseTimer,
     completeTask,
+    continueTimer,
+    hideExpirationModal,
+    showExpirationModal,
+    isExpired,
     getFormattedTimeRemaining
   } = useTimer()
 
@@ -58,6 +63,11 @@ const TaskCardCompact = ({
 
   // Get status color
   const getStatusColor = (status) => {
+    // Show different color for expired timers
+    if (isThisTaskActive && isExpired) {
+      return 'red' // Red for expired
+    }
+    
     switch (status) {
       case 'not_started': return 'gray'
       case 'active': return 'blue'
@@ -70,6 +80,10 @@ const TaskCardCompact = ({
   // Format status text
   const formatStatus = (status) => {
     if (isThisTaskActive) {
+      // Show "Expired" when timer has expired
+      if (isExpired) {
+        return 'Timer Expired - Choose Action!'
+      }
       return `Active - ${getFormattedTimeRemaining()}`
     }
     return status.split('_').map(word =>
@@ -121,6 +135,22 @@ const TaskCardCompact = ({
     }
   }
 
+  // Handle continuing expired timer
+  const handleContinueTimer = async (additionalMinutes) => {
+    try {
+      await continueTimer(additionalMinutes)
+      if (onUpdate) onUpdate()
+    } catch (error) {
+      console.error('Failed to continue timer:', error)
+    }
+  }
+
+  // Handle marking expired task as done
+  const handleMarkExpiredAsDone = () => {
+    hideExpirationModal()
+    setCompleteModalOpen(true)
+  }
+
   const handleEditTask = () => {
     setEditModalOpen(true)
   }
@@ -163,26 +193,32 @@ const TaskCardCompact = ({
         )
 
       case 'active':
-        return (
-          <Group spacing="xs">
-            <Button
-              size="xs"
-              variant="outline"
-              leftSection={<IconPlayerPause size={12} />}
-              onClick={handlePauseTimer}
-            >
-              Pause
-            </Button>
-            <Button
-              size="xs"
-              color="green"
-              leftSection={<IconCheck size={12} />}
-              onClick={handleCompleteTask}
-            >
-              Done
-            </Button>
-          </Group>
-        )
+        // Different buttons for expired vs active timers
+        if (isThisTaskActive && isExpired) {
+          // Timer has expired - user should see the modal, but show status
+        } else {
+          // Timer is still running normally
+          return (
+            <Group spacing="xs">
+              <Button
+                size="xs"
+                variant="outline"
+                leftSection={<IconPlayerPause size={12} />}
+                onClick={handlePauseTimer}
+              >
+                Pause
+              </Button>
+              <Button
+                size="xs"
+                color="green"
+                leftSection={<IconCheck size={12} />}
+                onClick={handleCompleteTask}
+              >
+                Done
+              </Button>
+            </Group>
+          )
+        }
 
       case 'done':
         return (
@@ -196,6 +232,8 @@ const TaskCardCompact = ({
         return null
     }
   }
+
+  const category = getTaskCategory()
 
   return (
     <>
@@ -224,14 +262,14 @@ const TaskCardCompact = ({
                   {task.description}
                 </Text>
               )}
-              {getTaskCategory() && (
+              {category && (
                 <Group spacing="xs" align="center" mt={4}>
                   <ColorSwatch
-                    color={getTaskCategory().color}
+                    color={category.color}
                     size={12}
                   />
                   <Text size="xs" c="dimmed">
-                    {getTaskCategory().name}
+                    {category.name}
                   </Text>
                 </Group>
               )}
@@ -246,7 +284,7 @@ const TaskCardCompact = ({
                 {task.priority}
               </Badge>
 
-              {/* Edit/Delete Menu - Only show if task is not active */}
+              {/* Edit/Delete Menu - Only show if task is not active or expired */}
               {!isThisTaskActive && (
                 <Menu shadow="md" width={120}>
                   <Menu.Target>
@@ -304,6 +342,16 @@ const TaskCardCompact = ({
           </Group>
         </Stack>
       </Paper>
+
+      {/* Timer Expiration Modal */}
+      <TimerExpirationModal
+        opened={showExpirationModal && isThisTaskActive}
+        onClose={hideExpirationModal}
+        onContinueTimer={handleContinueTimer}
+        onMarkAsDone={handleMarkExpiredAsDone}
+        task={task}
+        timeWorked={task.total_time_worked || 0}
+      />
 
       {/* Task Detail Modal */}
       <TaskDetailModal

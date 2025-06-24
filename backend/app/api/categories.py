@@ -4,6 +4,7 @@ from datetime import datetime
 
 from app.models import db, Categories, Users
 from app.utils.helpers import create_response
+from app.utils.validators import validate_hex_color
 
 category_bp = Blueprint("category", __name__)
 
@@ -19,14 +20,6 @@ def serialize_category(category):
         "created_at": category.created_at.isoformat() if category.created_at else None,
         "updated_at": category.updated_at.isoformat() if category.updated_at else None,
     }
-
-
-def validate_hex_color(color):
-    """Validate hex color format (#RRGGBB)"""
-    import re
-
-    pattern = r"^#[0-9A-Fa-f]{6}$"
-    return bool(re.match(pattern, color))
 
 
 @category_bp.route("/", methods=["POST"])
@@ -112,26 +105,6 @@ def get_user_categories():
 
     except Exception as e:
         current_app.logger.error(f"Get categories error: {str(e)}")
-        return create_response(
-            False, "Unable to process request. Please try again.", status=500
-        )
-
-
-@category_bp.route("/<int:category_id>", methods=["GET"])
-@jwt_required()
-def get_category(category_id):
-    """Get a specific category by ID"""
-    try:
-        user_id = get_jwt_identity()
-        category = Categories.query.filter_by(id=category_id, user_id=user_id).first()
-
-        if not category:
-            return create_response(False, "Category not found", status=404)
-
-        return create_response(data=serialize_category(category))
-
-    except Exception as e:
-        current_app.logger.error(f"Get category error: {str(e)}")
         return create_response(
             False, "Unable to process request. Please try again.", status=500
         )

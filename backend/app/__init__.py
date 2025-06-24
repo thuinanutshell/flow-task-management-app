@@ -55,7 +55,9 @@ def create_app(config_name="default"):
     from app.api.lists import list_bp
     from app.api.categories import category_bp
     from app.api.tasks import task_bp
+    from app.api.analytics import analytics_bp
 
+    app.register_blueprint(analytics_bp, url_prefix="/analytics")
     app.register_blueprint(auth_bp, url_prefix="/auth")
     app.register_blueprint(project_bp, url_prefix="/project")
     app.register_blueprint(list_bp, url_prefix="/list")

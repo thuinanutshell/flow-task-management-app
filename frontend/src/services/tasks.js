@@ -61,6 +61,14 @@ class TaskService {
     return apiCall(() => api.post(`/task/${taskId}/timer/pause`))
   }
 
+  async extendTimer(taskId, additionalMinutes) {
+    return apiCall(() => 
+      api.post(`/task/${taskId}/timer/extend`, {
+        additional_minutes: additionalMinutes
+      })
+    )
+  }
+
   // Complete task (requires mental_state and reflection)
   async completeTask(taskId, mentalState, reflection) {
     return apiCall(() => 
