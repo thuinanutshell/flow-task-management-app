@@ -41,7 +41,7 @@ We generate data every day - the data that helps us understand our behaviors and
 - Analytics: Users can retrieve data to see statistics about their completion rate, estimation accuracy, etc., by category and by project.
 - Experiments: Users can set up experiments to apply to certain types of tasks and measure the impact.
 
-
+<img width="1215" alt="Screenshot 2025-06-20 at 8 19 08 PM" src="https://github.com/user-attachments/assets/571e8a11-5e10-4a78-a565-3115ec4f3e8a" />
 
 
 
