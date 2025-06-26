@@ -2,7 +2,7 @@ import axios from 'axios'
 
 // Create base API instance
 const api = axios.create({
-  baseURL: 'flow-backend.up.railway.app',
+  baseURL: 'https://flow-backend.up.railway.app',  // Added https://
   headers: {
     'Content-Type': 'application/json'
   },
