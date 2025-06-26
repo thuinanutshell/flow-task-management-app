@@ -1,3 +1,4 @@
+
 # Flow - Your Ultimate Task Management App
 - [Tech Stack](#tech-stack)
 - [Problem Statement](#problem-statement)
@@ -25,7 +26,8 @@ At first, I wanted to use Shadcn UI for the pre-built components, but because it
 Given the scope of the project (which is [small-medium size](https://sqlite.org/features.html)), I decided to use a lightweight framework like Flask and a serverless database like SQLite. I am most comfortable with Python, so I chose it as the language for the backend. When the project scales, I'm considering using a more scalable database like PostgreSQL and the FastAPI framework.
 
 
-https://github.com/user-attachments/assets/ce525632-2082-4ee3-88e1-b2ad203a66e2
+https://github.com/user-attachments/assets/bd11a8d9-e4c6-4d4e-8509-350ef678074a
+
 
 
 ## Problem Statement
@@ -38,7 +40,10 @@ We generate data every day - the data that helps us understand our behaviors and
 - CRUD Operations: Users can create, read, update, and delete projects, categories, lists, and tasks.
 - Analytics: Users can retrieve data to see statistics about their completion rate, estimation accuracy, etc., by category and by project.
 - Experiments: Users can set up experiments to apply to certain types of tasks and measure the impact.
+
 <img width="1215" alt="Screenshot 2025-06-20 at 8 19 08 PM" src="https://github.com/user-attachments/assets/571e8a11-5e10-4a78-a565-3115ec4f3e8a" />
+
+
 
 ## Backend
 
