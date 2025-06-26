@@ -28,9 +28,15 @@ def create_app(config_name="default"):
     # Configure CORS to allow requests from your frontend
     cors.init_app(
         app,
-        origins=["http://localhost:5173"],
+        origins=[
+            "http://localhost:5173",  # Local development
+            "http://localhost:3000",  # Local development
+            "https://flow-task-management-app.vercel.app",  # Vercel domain
+            "https://*.vercel.app",  # All Vercel domains (for preview deployments)
+        ],
         allow_headers=["Content-Type", "Authorization"],
         methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+        supports_credentials=True,
     )
 
     # Import models
