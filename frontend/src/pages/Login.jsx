@@ -1,25 +1,30 @@
-// pages/Login.jsx - Mantine version
 import {
   Alert,
   Button,
   Container,
+  Divider,
   Group,
   Paper,
   PasswordInput,
   SimpleGrid,
   Stack,
+  Text,
   TextInput,
   Title
 } from '@mantine/core'
 import { useForm } from '@mantine/form'
-import { IconAlertCircle } from '@tabler/icons-react'
-import { useState } from 'react'
+import { IconAlertCircle, IconBrandGoogle } from '@tabler/icons-react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
+// Google OAuth configuration
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID
+
 const Login = () => {
   const [isLoginMode, setIsLoginMode] = useState(true)
-  const { login, register, isLoading, error, clearError } = useAuth()
+  const [googleLoading, setGoogleLoading] = useState(false)
+  const { login, register, googleLogin, isLoading, error, clearError } = useAuth()
   const navigate = useNavigate()
 
   const form = useForm({
@@ -44,6 +49,53 @@ const Login = () => {
         value.length >= 6 ? null : 'Password must be at least 6 characters'
     }
   })
+
+  // Load Google Identity Services script
+  useEffect(() => {
+    const loadGoogleScript = () => {
+      if (window.google) return // Already loaded
+
+      const script = document.createElement('script')
+      script.src = 'https://accounts.google.com/gsi/client'
+      script.async = true
+      script.defer = true
+      script.onload = initializeGoogleSignIn
+      document.head.appendChild(script)
+    }
+
+    const initializeGoogleSignIn = () => {
+      if (window.google && window.google.accounts) {
+        window.google.accounts.id.initialize({
+          client_id: GOOGLE_CLIENT_ID,
+          callback: handleGoogleResponse,
+          auto_select: false,
+          cancel_on_tap_outside: true
+        })
+      }
+    }
+
+    loadGoogleScript()
+  }, [])
+
+  const handleGoogleResponse = async (response) => {
+    try {
+      setGoogleLoading(true)
+      await googleLogin(response.credential)
+      navigate('/dashboard')
+    } catch (err) {
+      console.error('Google login error:', err)
+    } finally {
+      setGoogleLoading(false)
+    }
+  }
+
+  const handleGoogleSignIn = () => {
+    if (window.google && window.google.accounts) {
+      window.google.accounts.id.prompt()
+    } else {
+      console.error('Google Sign-In not loaded')
+    }
+  }
 
   const handleSubmit = async (values) => {
     try {
@@ -92,6 +144,28 @@ const Login = () => {
                 {error}
               </Alert>
             )}
+
+            {/* Google OAuth Button */}
+            <Button
+              leftSection={<IconBrandGoogle size={16} />}
+              variant="outline"
+              color="red"
+              onClick={handleGoogleSignIn}
+              loading={googleLoading}
+              fullWidth
+              size="md"
+            >
+              {isLoginMode ? 'Sign in with Google' : 'Sign up with Google'}
+            </Button>
+
+            <Divider 
+              label={
+                <Text size="sm" c="dimmed">
+                  Or continue with email
+                </Text>
+              } 
+              labelPosition="center" 
+            />
 
             {isLoginMode ? (
               // Login fields

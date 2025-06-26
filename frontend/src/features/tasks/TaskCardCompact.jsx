@@ -18,7 +18,7 @@ import {
   IconPlayerPlay,
   IconTrash
 } from '@tabler/icons-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useTimer } from '../../context/TimerContext'
 import { useTasks } from '../../hooks/useTasks'
 import CompleteTaskModal from './CompleteTaskModal'
@@ -44,12 +44,21 @@ const TaskCardCompact = ({
     hideExpirationModal,
     showExpirationModal,
     isExpired,
-    getFormattedTimeRemaining
+    getFormattedTimeRemaining,
+    syncWithBackend
   } = useTimer()
 
   // Check if this task is the active one
   const isActiveTask = activeTask?.id === task.id
   const isThisTaskActive = isActiveTask && isTimerActive
+
+  // Sync with backend if this task appears to be active but context doesn't match
+  useEffect(() => {
+    if (task.status === 'active' && task.is_timer_active && !isActiveTask) {
+      console.log('🔄 Task appears active but not in context, syncing...', task.id)
+      syncWithBackend(task.id)
+    }
+  }, [task.status, task.is_timer_active, isActiveTask, task.id, syncWithBackend])
 
   // Get priority color
   const getPriorityColor = (priority) => {

@@ -206,12 +206,40 @@ frontend/
 - Experiments that allow users to conduct productivity-related experiments, such as time estimation multiplier, and practice to improve mental state.
 
 ## Usage Guide
-1. Create a virtual environment
-2. Create a backend folder
+1. Clone this GitHub repo:
+```
+git clone https://github.com/thuinanutshell/flow-task-management-app
+```
+2. Create a virtual environment in the root directory (not inside the backend or the frontend)
+```
+python3 -m venv .venv
+```
 3. Activate the virtual environment
-4. Create a `.env` file inside the backend folder
-5. Run the backend
-6. Run the frontend
+```
+. .venv/bin/activate
+```
+4. Change to the backend folder & Install all the requirements
+```
+cd backend
+pip install -r requirements.txt
+```
+5. Create an environment variable file
+```
+GOOGLE_CLIENT_ID="your-google-client-id"
+GOOGLE_CLIENT_SECRET="your-google-client-secret"
+SECRET_KEY = "super-secret-key"
+JWT_SECRET_KEY = "super-secret-key"
+```
+6. Run the backend
+7. Open another terminal and change to the frontend directory
+```
+cd frontend
+```
+8. Run the frontend
+```
+npm install
+npm run dev
+```
 
 ## Key Learnings
 - Having clear user stories and user flow is so important that I couldn't emphasize it enough, even more so now that we have AI assistants. At some point, I myself wasn't so sure about the timer user flow, and I made a mistake by asking AI to suggest the code structure I could follow. But then, I took a step back and asked myself: Was the way I explained the flow clear enough? And do I really understand it? Then I chose the traditional way, using a pen and paper to draw out the interactions on the frontend. As a result, I could explain the context much better to the LLM and decided on a solution that was way simpler. Specifically, I was faced with two design options:

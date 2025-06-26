@@ -1,6 +1,6 @@
-// hooks/useWorkspaceLists.js
 import { notifications } from '@mantine/notifications'
 import { useEffect, useState } from 'react'
+import { useAuth } from '../context/AuthContext'
 import { listService } from '../services/lists'
 
 // Get today's date as a string (YYYY-MM-DD)
@@ -8,34 +8,47 @@ const getTodayDateString = () => {
   return new Date().toISOString().split('T')[0]
 }
 
-// Get localStorage key for today's workspace
-const getTodayWorkspaceKey = () => {
-  return `flow_workspace_lists_${getTodayDateString()}`
+// Get localStorage key for today's workspace with user ID
+const getTodayWorkspaceKey = (userId) => {
+  if (!userId) return null
+  return `flow_workspace_lists_${userId}_${getTodayDateString()}`
 }
 
 export const useWorkspaceLists = () => {
-  // Lists that user has added to their workspace (dashboard) for TODAY
+  const { user } = useAuth() // Get current user from auth context
   const [workspaceLists, setWorkspaceLists] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [currentDate, setCurrentDate] = useState(getTodayDateString())
 
-  // Load workspace lists from localStorage for today's date
+  // Load workspace lists from localStorage for today's date and current user
   useEffect(() => {
     const loadTodayWorkspaceLists = () => {
       try {
         setLoading(true)
-        const todayKey = getTodayWorkspaceKey()
+        
+        if (!user?.id) {
+          console.log('No user logged in, clearing workspace')
+          setWorkspaceLists([])
+          return
+        }
+        
+        const todayKey = getTodayWorkspaceKey(user.id)
+        if (!todayKey) {
+          setWorkspaceLists([])
+          return
+        }
+        
         const savedLists = localStorage.getItem(todayKey)
         
-        console.log(`Loading workspace lists for ${getTodayDateString()}:`, savedLists) // Debug log
+        console.log(`Loading workspace lists for user ${user.id} on ${getTodayDateString()}:`, savedLists)
         
         if (savedLists) {
           const parsedLists = JSON.parse(savedLists)
-          console.log('Parsed today\'s workspace lists:', parsedLists) // Debug log
+          console.log('Parsed today\'s workspace lists:', parsedLists)
           setWorkspaceLists(parsedLists)
         } else {
-          console.log(`No workspace lists found for ${getTodayDateString()}`) // Debug log
+          console.log(`No workspace lists found for user ${user.id} on ${getTodayDateString()}`)
           setWorkspaceLists([])
         }
         
@@ -50,21 +63,23 @@ export const useWorkspaceLists = () => {
     }
 
     loadTodayWorkspaceLists()
-  }, [])
+  }, [user?.id]) // Re-run when user changes
 
   // Save workspace lists to localStorage for today's date whenever they change
   useEffect(() => {
-    // Skip saving on initial load
-    if (loading) return
+    // Skip saving on initial load or if no user
+    if (loading || !user?.id) return
     
     try {
-      const todayKey = getTodayWorkspaceKey()
-      console.log(`Saving workspace lists for ${getTodayDateString()}:`, workspaceLists) // Debug log
+      const todayKey = getTodayWorkspaceKey(user.id)
+      if (!todayKey) return
+      
+      console.log(`Saving workspace lists for user ${user.id} on ${getTodayDateString()}:`, workspaceLists)
       localStorage.setItem(todayKey, JSON.stringify(workspaceLists))
     } catch (error) {
       console.error('Failed to save today\'s workspace lists to localStorage:', error)
     }
-  }, [workspaceLists, loading])
+  }, [workspaceLists, loading, user?.id])
 
   // Create a new list and automatically add it to today's workspace
   const createListInWorkspace = async (listData) => {
@@ -88,19 +103,18 @@ export const useWorkspaceLists = () => {
         project_name: project?.name || 'Unknown Project',
         project_id: listData.projectId,
         project_status: project?.status || 'unknown',
-        isWorkspaceList: false, // This is a dashboard-created list, not imported
+        isWorkspaceList: false,
         addedToWorkspaceAt: new Date().toISOString(),
-        workspaceDate: getTodayDateString(), // Track which date this was added
-        // Add task counts
+        workspaceDate: getTodayDateString(),
+        userId: user?.id, // Add user ID for tracking
         total_tasks: 0,
         completed_tasks: 0,
         task_count: 0
       }
       
-      // Add to today's workspace lists
       setWorkspaceLists(prev => {
         const updatedLists = [...prev, newListWithProject]
-        console.log('Adding new list to today\'s workspace:', newListWithProject) // Debug log
+        console.log('Adding new list to today\'s workspace:', newListWithProject)
         return updatedLists
       })
       
@@ -125,23 +139,22 @@ export const useWorkspaceLists = () => {
     try {
       const newWorkspaceLists = selectedLists.map(list => ({
         ...list,
-        isWorkspaceList: true, // Flag to identify imported lists
+        isWorkspaceList: true,
         originalProjectId: list.project_id,
         originalProjectName: list.project_name || 'Unknown Project',
         addedToWorkspaceAt: new Date().toISOString(),
-        workspaceDate: getTodayDateString(), // Track which date this was added
-        // Ensure we have task counts
+        workspaceDate: getTodayDateString(),
+        userId: user?.id, // Add user ID for tracking
         total_tasks: list.task_count || 0,
         completed_tasks: list.completed_tasks || 0,
         task_count: list.task_count || 0
       }))
       
       setWorkspaceLists(prev => {
-        // Avoid duplicates by checking if list ID already exists in today's workspace
         const existingIds = prev.map(l => l.id)
         const uniqueNewLists = newWorkspaceLists.filter(l => !existingIds.includes(l.id))
         const updatedLists = [...prev, ...uniqueNewLists]
-        console.log('Importing lists to today\'s workspace:', uniqueNewLists) // Debug log
+        console.log('Importing lists to today\'s workspace:', uniqueNewLists)
         return updatedLists
       })
       
@@ -165,7 +178,7 @@ export const useWorkspaceLists = () => {
     try {
       setWorkspaceLists(prev => {
         const updatedLists = prev.filter(list => list.id !== listId)
-        console.log('Removing list from today\'s workspace:', listId) // Debug log
+        console.log('Removing list from today\'s workspace:', listId)
         return updatedLists
       })
       notifications.show({
@@ -188,7 +201,7 @@ export const useWorkspaceLists = () => {
       await listService.deleteList(listId)
       setWorkspaceLists(prev => {
         const updatedLists = prev.filter(list => list.id !== listId)
-        console.log('Deleting list completely:', listId) // Debug log
+        console.log('Deleting list completely:', listId)
         return updatedLists
       })
       notifications.show({
@@ -221,15 +234,17 @@ export const useWorkspaceLists = () => {
     }
   }
 
-  // Get historical workspace data (for analytics)
+  // Get historical workspace data for current user (for analytics)
   const getHistoricalWorkspaces = () => {
+    if (!user?.id) return []
+    
     const historicalData = []
     const keys = Object.keys(localStorage)
     
     keys.forEach(key => {
-      if (key.startsWith('flow_workspace_lists_')) {
+      if (key.startsWith(`flow_workspace_lists_${user.id}_`)) {
         try {
-          const date = key.replace('flow_workspace_lists_', '')
+          const date = key.replace(`flow_workspace_lists_${user.id}_`, '')
           const data = JSON.parse(localStorage.getItem(key))
           historicalData.push({
             date,
@@ -244,33 +259,38 @@ export const useWorkspaceLists = () => {
       }
     })
     
-    // Sort by date (newest first)
     return historicalData.sort((a, b) => new Date(b.date) - new Date(a.date))
   }
 
-  // Clear today's workspace (for debugging)
+  // Clear today's workspace for current user
   const clearTodayWorkspace = () => {
+    if (!user?.id) return
+    
     setWorkspaceLists([])
-    const todayKey = getTodayWorkspaceKey()
-    localStorage.removeItem(todayKey)
-    console.log(`Today's workspace cleared (${getTodayDateString()})`) // Debug log
+    const todayKey = getTodayWorkspaceKey(user.id)
+    if (todayKey) {
+      localStorage.removeItem(todayKey)
+      console.log(`Today's workspace cleared for user ${user.id} (${getTodayDateString()})`)
+    }
   }
 
-  // Clear old workspaces (keep only last N days)
+  // Clean up old workspaces for current user (keep only last N days)
   const cleanupOldWorkspaces = (daysToKeep = 30) => {
+    if (!user?.id) return
+    
     const keys = Object.keys(localStorage)
     const cutoffDate = new Date()
     cutoffDate.setDate(cutoffDate.getDate() - daysToKeep)
     
     keys.forEach(key => {
-      if (key.startsWith('flow_workspace_lists_')) {
+      if (key.startsWith(`flow_workspace_lists_${user.id}_`)) {
         try {
-          const dateStr = key.replace('flow_workspace_lists_', '')
+          const dateStr = key.replace(`flow_workspace_lists_${user.id}_`, '')
           const date = new Date(dateStr)
           
           if (date < cutoffDate) {
             localStorage.removeItem(key)
-            console.log(`Removed old workspace data for ${dateStr}`)
+            console.log(`Removed old workspace data for user ${user.id} on ${dateStr}`)
           }
         } catch (error) {
           console.error(`Failed to process cleanup for ${key}:`, error)
@@ -290,7 +310,7 @@ export const useWorkspaceLists = () => {
     deleteListCompletely,
     getListDetail,
     getHistoricalWorkspaces,
-    clearTodayWorkspace, // For debugging
+    clearTodayWorkspace,
     cleanupOldWorkspaces
   }
 }
