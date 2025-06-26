@@ -91,4 +91,9 @@ def create_app(config_name="default"):
         )
         app.redis = None
 
+    @app.route("/health")
+    def health_check():
+        """Simple health check endpoint for Railway"""
+        return {"status": "healthy", "service": "flow-backend"}, 200
+
     return app
