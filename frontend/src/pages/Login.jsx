@@ -64,6 +64,10 @@ const Login = () => {
     }
 
     const initializeGoogleSignIn = () => {
+      console.log('🔵 Initializing Google Sign-In...')
+      console.log('🔵 Client ID:', GOOGLE_CLIENT_ID)
+      console.log('🔵 Current origin:', window.location.origin)
+      
       if (window.google && window.google.accounts) {
         window.google.accounts.id.initialize({
           client_id: GOOGLE_CLIENT_ID,
@@ -71,6 +75,9 @@ const Login = () => {
           auto_select: false,
           cancel_on_tap_outside: true
         })
+        console.log('🟢 Google Sign-In initialized successfully')
+      } else {
+        console.error('🔴 Google accounts library not loaded')
       }
     }
 
@@ -79,16 +86,31 @@ const Login = () => {
 
   const handleGoogleResponse = async (response) => {
     try {
+      console.log('🟢 Google OAuth Response received:', response)
+      console.log('🟢 ID Token present:', !!response.credential)
+      console.log('🟢 Token length:', response.credential?.length)
+      
       setGoogleLoading(true)
+      
+      // Log the request being made to your backend
+      console.log('🔵 Sending request to backend...')
+      
       await googleLogin(response.credential)
+      
+      console.log('🟢 Backend login successful!')
       navigate('/dashboard')
     } catch (err) {
-      console.error('Google login error:', err)
+      console.error('🔴 Google login error:', err)
+      console.error('🔴 Error details:', {
+        message: err.message,
+        response: err.response?.data,
+        status: err.response?.status
+      })
     } finally {
       setGoogleLoading(false)
     }
   }
-
+  
   const handleGoogleSignIn = () => {
     if (window.google && window.google.accounts) {
       window.google.accounts.id.prompt()
@@ -124,6 +146,14 @@ const Login = () => {
     clearError()
     form.reset()
   }
+
+  useEffect(() => {
+    console.log('🔍 Current window.location.origin:', window.location.origin)
+    console.log('🔍 Current window.location.href:', window.location.href)
+    console.log('🔍 Current hostname:', window.location.hostname)
+    console.log('🔍 Current port:', window.location.port)
+    console.log('🔍 Current protocol:', window.location.protocol)
+  }, [])
 
   return (
     <Container size={420} my={40}>
