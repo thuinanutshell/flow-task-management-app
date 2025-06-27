@@ -56,14 +56,26 @@ const ActionTypes = {
 const timerReducer = (state, action) => {
   switch (action.type) {
     case ActionTypes.SET_ACTIVE_TIMER:
+      const startTime = new Date(action.payload.current_work_start);
+      const endTime = new Date(action.payload.current_planned_end);
+
+      console.log("🔵 SET_ACTIVE_TIMER Debug:", {
+        startTime: startTime.toISOString(),
+        endTime: endTime.toISOString(),
+        now: new Date().toISOString(),
+        durationMinutes: action.payload.duration_minutes,
+        isEndTimeValid: endTime > startTime,
+        timeUntilEnd: Math.floor((endTime - new Date()) / 1000 / 60),
+      });
+
       return {
         ...state,
         activeTask: action.payload.task,
         timerState: TimerStates.ACTIVE,
         sessionDuration: action.payload.duration_minutes,
         totalTimeWorked: action.payload.total_time_worked,
-        currentWorkStart: new Date(action.payload.current_work_start),
-        currentPlannedEnd: new Date(action.payload.current_planned_end),
+        currentWorkStart: startTime,
+        currentPlannedEnd: endTime,
         isExpired: false,
         showExpirationModal: false,
       };
@@ -74,7 +86,8 @@ const timerReducer = (state, action) => {
       }
 
       const now = new Date();
-      const willExpire = now >= state.currentPlannedEnd && !state.isExpired;
+      const plannedEnd = new Date(state.currentPlannedEnd);
+      const willExpire = now >= plannedEnd && !state.isExpired;
 
       return {
         ...state,
@@ -378,8 +391,23 @@ export const TimerProvider = ({ children }) => {
     }
 
     const now = new Date();
-    const remainingMs = state.currentPlannedEnd - now;
-    return Math.max(0, Math.floor(remainingMs / (1000 * 60)));
+    const endTime = new Date(state.currentPlannedEnd);
+    const remainingMs = endTime - now;
+    const remainingMinutes = Math.max(0, Math.floor(remainingMs / (1000 * 60)));
+
+    // Debug logging
+    if (remainingMinutes === 0 && remainingMs > -60000) {
+      // Within 1 minute of expiry
+      console.log("⏰ Timer near expiry:", {
+        now: now.toISOString(),
+        endTime: endTime.toISOString(),
+        remainingMs,
+        remainingMinutes,
+        isExpired: state.isExpired,
+      });
+    }
+
+    return remainingMinutes;
   };
 
   // Check for expired timers periodically
