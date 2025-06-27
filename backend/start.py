@@ -20,13 +20,6 @@ def initialize_database():
 
         app = create_app(config_name)
 
-        # Log database URL (without credentials)
-        db_url = app.config.get('SQLALCHEMY_DATABASE_URI', 'Not set')
-        if db_url.startswith('postgresql://'):
-            logger.info("✅ Using PostgreSQL database")
-        else:
-            logger.info(f"📊 Using database: {db_url[:20]}...")
-
         with app.app_context():
             # Test database connection first
             try:
@@ -42,9 +35,8 @@ def initialize_database():
 
     except Exception as e:
         logger.error(f"❌ Database initialization failed: {str(e)}")
-        import traceback
-        traceback.print_exc()
         sys.exit(1)
+
 
 def start_server():
     """Start the Gunicorn server"""
@@ -62,13 +54,12 @@ def start_server():
         "run:app"
     ]
 
-    logger.info(f"Command: {' '.join(cmd)}")
-
     try:
         subprocess.run(cmd, check=True)
     except subprocess.CalledProcessError as e:
         logger.error(f"❌ Failed to start server: {e}")
         sys.exit(1)
+
 
 if __name__ == "__main__":
     logger.info("🚀 Starting Flask application...")

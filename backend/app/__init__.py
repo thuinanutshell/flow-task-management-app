@@ -15,17 +15,30 @@ cors = CORS()
 
 def create_app(config_name="default"):
     """Application factory pattern."""
+    from flask import Flask
+    from flask_cors import CORS
+    from flask_jwt_extended import JWTManager
+    from flask_migrate import Migrate
+    from datetime import datetime
+
     app = Flask(__name__)
+
+    # Import config after Flask app creation
+    from app.config import config
+    from app.models.base import db
 
     # Load configuration
     app.config.from_object(config[config_name])
 
     # Initialize extensions with app
     db.init_app(app)
+    migrate = Migrate()
     migrate.init_app(app, db)
+    jwt = JWTManager()
     jwt.init_app(app)
 
     # Configure CORS
+    cors = CORS()
     cors.init_app(
         app,
         origins=[
@@ -115,7 +128,7 @@ def create_app(config_name="default"):
 
     @app.route("/health")
     def health_check():
-        """Enhanced health check endpoint"""
+        """Health check endpoint with Redis status"""
         health_status = {
             "status": "healthy",
             "service": "flow-backend",
