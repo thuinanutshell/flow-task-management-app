@@ -91,12 +91,13 @@ function timerReducer(state, action) {
       }
 
       const remaining = calculateRemainingTime(state.plannedEndTimestamp);
-      const willExpire = remaining === 0 && !state.isExpired;
+      const hasJustExpired = remaining === 0 && !state.isExpired;
 
       return {
         ...state,
-        isExpired: willExpire,
-        showExpirationModal: willExpire,
+        isExpired: remaining === 0,
+        // Only show modal when it JUST expired, not when it's already expired
+        showExpirationModal: hasJustExpired ? true : state.showExpirationModal,
       };
     }
 
@@ -216,7 +217,7 @@ export const TimerProvider = ({ children }) => {
     return () => clearInterval(interval);
   }, [state.timerState, state.startTimestamp]);
 
-  // Play sound when timer expires
+  // Play sound when timer expires (only once)
   useEffect(() => {
     if (
       state.isExpired &&
@@ -225,7 +226,7 @@ export const TimerProvider = ({ children }) => {
     ) {
       playBeep();
     }
-  }, [state.isExpired, state.timerState, state.showExpirationModal]);
+  }, [state.showExpirationModal]); // Only depend on showExpirationModal to avoid repeated beeps
 
   const startTimer = async (task, durationMinutes = null) => {
     try {
