@@ -1,3 +1,4 @@
+# backend/app/config.py
 import os
 from datetime import timedelta
 
@@ -18,7 +19,8 @@ class Config:
     GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
     GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
 
-    # Redis (for JWT blacklist)
+    # Redis Configuration - Support both URL and individual configs
+    REDIS_URL = os.getenv("REDIS_URL")  # Railway provides this
     REDIS_ENABLED = os.getenv("REDIS_ENABLED", "True").lower() == "true"
     REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
     REDIS_PORT = int(os.getenv("REDIS_PORT", 6379))
@@ -33,18 +35,18 @@ class DevelopmentConfig(Config):
     """Development configuration."""
 
     DEBUG = True
-    SQLALCHEMY_ECHO = True  # Log SQL queries
-    
+    SQLALCHEMY_ECHO = True
+
     # Make Redis optional in development
     REDIS_ENABLED = os.getenv("REDIS_ENABLED", "False").lower() == "true"
-    REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
-    REDIS_PORT = int(os.getenv("REDIS_PORT", 6379))
 
 
 class ProductionConfig(Config):
     """Production configuration."""
 
     DEBUG = False
+    # Redis should be enabled in production
+    REDIS_ENABLED = os.getenv("REDIS_ENABLED", "True").lower() == "true"
 
 
 class TestingConfig(Config):
@@ -52,6 +54,7 @@ class TestingConfig(Config):
 
     TESTING = True
     SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"
+    REDIS_ENABLED = False  # Disable Redis for tests
 
 
 # Configuration dictionary

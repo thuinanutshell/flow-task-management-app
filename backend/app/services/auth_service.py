@@ -15,14 +15,14 @@ class AuthService:
         3. Add the user to the database and use flush to get their ID
         4. Create a traditional authentication record associated with that user
         5. Add and commit
-        
+
         Args:
             email (str) - required
             username (str) - required
             password (str) - required
             first_name (str) - required
             last_name (str) - required
-        
+
         Return:
             user: A Users object
         """
