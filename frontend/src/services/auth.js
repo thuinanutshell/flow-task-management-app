@@ -4,42 +4,65 @@ import api, { apiCall } from "./api";
 class AuthService {
   // Register new user
   async register(userData) {
-    // Your backend expects: first_name, last_name, email, username, password
-    const response = apiCall(() =>
-      api.post("/auth/register", {
-        first_name: userData.firstName,
-        last_name: userData.lastName,
-        email: userData.email,
-        username: userData.username,
-        password: userData.password,
-      }),
-    );
+    try {
+      console.log("🔵 AuthService: Starting registration with:", userData);
 
-    if (response.data.token) {
-      localStorage.setItem("access_token", response.data.token);
-      localStorage.setItem("user", JSON.stringify(response.data.user));
+      // Your backend expects: first_name, last_name, email, username, password
+      const response = await apiCall(() =>
+        api.post("/auth/register", {
+          first_name: userData.firstName,
+          last_name: userData.lastName,
+          email: userData.email,
+          username: userData.username,
+          password: userData.password,
+        }),
+      );
+
+      console.log("🟢 AuthService: Registration response:", response);
+
+      // Store token and user data in localStorage
+      // { success: true, data: { token: "...", user: {...} } }
+      if (response && response.data && response.data.token) {
+        console.log("🟢 AuthService: Token found, storing in localStorage");
+        localStorage.setItem("access_token", response.data.token);
+        localStorage.setItem("user", JSON.stringify(response.data.user));
+      } else {
+        console.log("🟡 AuthService: No token in response:", response);
+      }
+
+      return response;
+    } catch (error) {
+      console.error("🔴 AuthService: Registration error:", error);
+      throw error;
     }
-
-    return response;
   }
 
   // Login user
   async login(credentials) {
-    // Your backend expects 'login' field (email or username) and 'password'
-    const loginData = {
-      login: credentials.email || credentials.username || credentials.login,
-      password: credentials.password,
-    };
+    try {
+      console.log("🔵 AuthService: Starting login");
 
-    const response = await apiCall(() => api.post("/auth/login", loginData));
+      // Your backend expects 'login' field (email or username) and 'password'
+      const loginData = {
+        login: credentials.email || credentials.username || credentials.login,
+        password: credentials.password,
+      };
 
-    // Store token and user data in localStorage
-    if (response.data.token) {
-      localStorage.setItem("access_token", response.data.token);
-      localStorage.setItem("user", JSON.stringify(response.data.user));
+      const response = await apiCall(() => api.post("/auth/login", loginData));
+
+      console.log("🟢 AuthService: Login response:", response);
+
+      // Store token and user data in localStorage
+      if (response && response.data && response.data.token) {
+        localStorage.setItem("access_token", response.data.token);
+        localStorage.setItem("user", JSON.stringify(response.data.user));
+      }
+
+      return response;
+    } catch (error) {
+      console.error("🔴 AuthService: Login error:", error);
+      throw error;
     }
-
-    return response;
   }
 
   // Logout user
