@@ -6,8 +6,13 @@ from datetime import timedelta
 class Config:
     """Base configuration."""
 
-    # Database
-    SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL", "sqlite:///task_app.db")
+    # Database - Handle Railway's DATABASE_URL format conversion
+    database_url = os.getenv("DATABASE_URL")
+    if database_url and database_url.startswith("postgres://"):
+        # Railway provides postgres:// but SQLAlchemy needs postgresql://
+        database_url = database_url.replace("postgres://", "postgresql://", 1)
+
+    SQLALCHEMY_DATABASE_URI = database_url or "sqlite:///task_app.db"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     # JWT Configuration
@@ -47,6 +52,15 @@ class ProductionConfig(Config):
     DEBUG = False
     # Redis should be enabled in production
     REDIS_ENABLED = os.getenv("REDIS_ENABLED", "True").lower() == "true"
+
+    # Add production-specific database settings for better connection handling
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        'pool_pre_ping': True,        # Verify connections before use
+        'pool_recycle': 300,          # Recycle connections every 5 minutes
+        'connect_args': {
+            'connect_timeout': 10,    # Connection timeout
+        }
+    }
 
 
 class TestingConfig(Config):

@@ -100,12 +100,28 @@ def create_app(config_name="default"):
 
     @app.route("/health")
     def health_check():
-        """Health check endpoint with Redis status"""
-        redis_status = "connected" if app.redis else "disconnected"
-        return {
+        """Enhanced health check endpoint"""
+        health_status = {
             "status": "healthy",
             "service": "flow-backend",
-            "redis": redis_status
-        }, 200
+            "timestamp": datetime.utcnow().isoformat()
+        }
+
+        # Check database connection
+        try:
+            db.engine.connect()
+            health_status["database"] = "connected"
+        except Exception as e:
+            health_status["database"] = f"error: {str(e)}"
+            health_status["status"] = "unhealthy"
+
+        # Check Redis connection
+        redis_status = "connected" if app.redis else "disconnected"
+        health_status["redis"] = redis_status
+
+        # Return appropriate status code
+        status_code = 200 if health_status["status"] == "healthy" else 503
+
+        return health_status, status_code
 
     return app
