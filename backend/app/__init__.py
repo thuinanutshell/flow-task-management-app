@@ -1,3 +1,18 @@
+from flask import Flask
+from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
+from flask_jwt_extended import JWTManager
+from flask_cors import CORS
+
+from app.models.base import db
+from app.config import config
+
+# Initialize extensions
+migrate = Migrate()
+jwt = JWTManager()
+cors = CORS()
+
+
 def create_app(config_name="default"):
     """Application factory pattern."""
     app = Flask(__name__)
