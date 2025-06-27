@@ -7,7 +7,7 @@ class AuthService {
     try {
       console.log("🔵 AuthService: Starting registration with:", userData);
 
-      // Your backend expects: first_name, last_name, email, username, password
+      // first_name, last_name, email, username, password
       const response = await apiCall(() =>
         api.post("/auth/register", {
           first_name: userData.firstName,
@@ -146,15 +146,24 @@ class AuthService {
     }
   }
 
+  // Logout user - ONLY clear storage, don't navigate
+  logout() {
+    console.log("🔵 AuthService: Clearing localStorage");
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("user");
+  }
+
   // Logout user (calls backend to revoke token)
   async logoutFromServer() {
     try {
+      console.log("🔵 AuthService: Calling logout endpoint");
       await apiCall(() => api.post("/auth/logout"));
     } catch (error) {
       // Even if server logout fails, we still clear local storage
-      console.error("Server logout failed:", error);
+      console.error("🔴 AuthService: Server logout failed:", error);
     } finally {
-      this.logout(); // Clear local storage regardless
+      console.log("🔵 AuthService: Clearing local storage");
+      this.logout(); // Clear local storage regardless (no navigation)
     }
   }
 }

@@ -1,4 +1,3 @@
-// context/AuthContext.jsx
 import { createContext, useContext, useEffect, useReducer } from "react";
 import authService from "../services/auth";
 
@@ -168,6 +167,7 @@ export const AuthProvider = ({ children }) => {
       await authService.logoutFromServer();
     } catch (error) {
       console.error("Server logout failed:", error);
+      authService.logout();
     } finally {
       // Always clear local state
       dispatch({ type: ActionTypes.LOGOUT });
