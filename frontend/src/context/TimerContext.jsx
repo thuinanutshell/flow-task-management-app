@@ -28,13 +28,47 @@ const TimerStates = {
   DONE: "done", // Task completed
 };
 
+// Helper function to ensure we're working with proper Date objects
+const parseTimestamp = (timestamp) => {
+  if (!timestamp) return null;
+  const date = new Date(timestamp);
+  // Validate the date
+  if (isNaN(date.getTime())) {
+    console.error("Invalid timestamp:", timestamp);
+    return null;
+  }
+  return date;
+};
+
+// Helper function to get remaining time in milliseconds
+const getRemainingTime = (endTime) => {
+  if (!endTime) return 0;
+  const now = new Date();
+  const end = parseTimestamp(endTime);
+  if (!end) return 0;
+
+  const remaining = end.getTime() - now.getTime();
+  return Math.max(0, remaining);
+};
+
+// Helper function to get elapsed time in milliseconds
+const getElapsedTime = (startTime) => {
+  if (!startTime) return 0;
+  const now = new Date();
+  const start = parseTimestamp(startTime);
+  if (!start) return 0;
+
+  const elapsed = now.getTime() - start.getTime();
+  return Math.max(0, elapsed);
+};
+
 // Initial state
 const initialState = {
   activeTask: null,
   timerState: TimerStates.IDLE,
   sessionDuration: 0, // planned session duration in minutes
-  currentWorkStart: null, // when current session started (Date object)
-  currentPlannedEnd: null, // when current session should end (Date object)
+  currentWorkStart: null, // when current session started (ISO string)
+  currentPlannedEnd: null, // when current session should end (ISO string)
   totalTimeWorked: 0, // total minutes worked across all sessions
   isExpired: false,
   showExpirationModal: false,
@@ -55,43 +89,74 @@ const ActionTypes = {
 // Reducer function
 const timerReducer = (state, action) => {
   switch (action.type) {
-    case ActionTypes.SET_ACTIVE_TIMER:
-      const startTime = new Date(action.payload.current_work_start);
-      const endTime = new Date(action.payload.current_planned_end);
+    case ActionTypes.SET_ACTIVE_TIMER: {
+      const {
+        current_work_start,
+        current_planned_end,
+        duration_minutes,
+        total_time_worked,
+        task,
+      } = action.payload;
+
+      // Parse timestamps
+      const startTime = parseTimestamp(current_work_start);
+      const endTime = parseTimestamp(current_planned_end);
+
+      if (!startTime || !endTime) {
+        console.error("Invalid timestamps in SET_ACTIVE_TIMER:", {
+          current_work_start,
+          current_planned_end,
+        });
+        return state;
+      }
+
+      // Check if timer should be expired immediately
+      const now = new Date();
+      const isCurrentlyExpired = now >= endTime;
 
       console.log("🔵 SET_ACTIVE_TIMER Debug:", {
         startTime: startTime.toISOString(),
         endTime: endTime.toISOString(),
-        now: new Date().toISOString(),
-        durationMinutes: action.payload.duration_minutes,
+        now: now.toISOString(),
+        durationMinutes: duration_minutes,
         isEndTimeValid: endTime > startTime,
-        timeUntilEnd: Math.floor((endTime - new Date()) / 1000 / 60),
+        timeUntilEnd: Math.floor((endTime - now) / 1000 / 60),
+        isCurrentlyExpired,
       });
 
       return {
         ...state,
-        activeTask: action.payload.task,
+        activeTask: task,
         timerState: TimerStates.ACTIVE,
-        sessionDuration: action.payload.duration_minutes,
-        totalTimeWorked: action.payload.total_time_worked,
-        currentWorkStart: startTime,
-        currentPlannedEnd: endTime,
-        isExpired: false,
-        showExpirationModal: false,
+        sessionDuration: duration_minutes,
+        totalTimeWorked: total_time_worked,
+        currentWorkStart: current_work_start, // Store as ISO string
+        currentPlannedEnd: current_planned_end, // Store as ISO string
+        isExpired: isCurrentlyExpired,
+        showExpirationModal: isCurrentlyExpired,
       };
+    }
 
     case ActionTypes.UPDATE_TIMER: {
       if (state.timerState !== TimerStates.ACTIVE || !state.currentPlannedEnd) {
         return state;
       }
 
-      const now = new Date();
-      const plannedEnd = new Date(state.currentPlannedEnd);
-      const willExpire = now >= plannedEnd && !state.isExpired;
+      const remainingMs = getRemainingTime(state.currentPlannedEnd);
+      const willExpire = remainingMs <= 0 && !state.isExpired;
+
+      // Only update if there's a change in expiration status
+      if (willExpire) {
+        console.log("⏰ Timer expired!", {
+          currentPlannedEnd: state.currentPlannedEnd,
+          now: new Date().toISOString(),
+          remainingMs,
+        });
+      }
 
       return {
         ...state,
-        isExpired: willExpire,
+        isExpired: willExpire || state.isExpired,
         showExpirationModal: willExpire,
       };
     }
@@ -121,13 +186,15 @@ const timerReducer = (state, action) => {
     }
 
     case ActionTypes.EXTEND_TIMER: {
+      const newPlannedEnd = action.payload.newPlannedEnd;
+
       return {
         ...state,
         sessionDuration:
           state.sessionDuration + action.payload.additionalMinutes,
         isExpired: false,
         showExpirationModal: false,
-        currentPlannedEnd: new Date(action.payload.newPlannedEnd),
+        currentPlannedEnd: newPlannedEnd,
       };
     }
 
@@ -158,12 +225,8 @@ const timerReducer = (state, action) => {
                 ? TimerStates.DONE
                 : TimerStates.IDLE,
         totalTimeWorked: backendData.total_time_worked,
-        currentWorkStart: backendData.current_work_start
-          ? new Date(backendData.current_work_start)
-          : null,
-        currentPlannedEnd: backendData.current_planned_end
-          ? new Date(backendData.current_planned_end)
-          : null,
+        currentWorkStart: backendData.current_work_start,
+        currentPlannedEnd: backendData.current_planned_end,
         isExpired: backendData.is_expired || false,
       };
     }
@@ -215,7 +278,16 @@ export const TimerProvider = ({ children }) => {
     try {
       const duration = durationMinutes || task.planned_duration || 25;
 
+      console.log(
+        "🚀 Starting timer for task:",
+        task.name,
+        "Duration:",
+        duration,
+      );
+
       const response = await taskService.startWorkSession(task.id, duration);
+
+      console.log("✅ Timer started successfully:", response.data);
 
       dispatch({
         type: ActionTypes.SET_ACTIVE_TIMER,
@@ -231,6 +303,7 @@ export const TimerProvider = ({ children }) => {
         color: "blue",
       });
     } catch (error) {
+      console.error("❌ Failed to start timer:", error);
       notifications.show({
         title: "Error",
         message: error.message || "Failed to start timer",
@@ -379,8 +452,7 @@ export const TimerProvider = ({ children }) => {
       return 0;
     }
 
-    const now = new Date();
-    const elapsedMs = now - state.currentWorkStart;
+    const elapsedMs = getElapsedTime(state.currentWorkStart);
     return Math.floor(elapsedMs / (1000 * 60));
   };
 
@@ -390,24 +462,10 @@ export const TimerProvider = ({ children }) => {
       return 0;
     }
 
-    const now = new Date();
-    const endTime = new Date(state.currentPlannedEnd);
-    const remainingMs = endTime - now;
-    const remainingMinutes = Math.max(0, Math.floor(remainingMs / (1000 * 60)));
+    const remainingMs = getRemainingTime(state.currentPlannedEnd);
+    const remainingMinutes = Math.floor(remainingMs / (1000 * 60));
 
-    // Debug logging
-    if (remainingMinutes === 0 && remainingMs > -60000) {
-      // Within 1 minute of expiry
-      console.log("⏰ Timer near expiry:", {
-        now: now.toISOString(),
-        endTime: endTime.toISOString(),
-        remainingMs,
-        remainingMinutes,
-        isExpired: state.isExpired,
-      });
-    }
-
-    return remainingMinutes;
+    return Math.max(0, remainingMinutes);
   };
 
   // Check for expired timers periodically
@@ -460,14 +518,16 @@ export const TimerProvider = ({ children }) => {
     getFormattedTimeRemaining: () => {
       const minutes = getCurrentSessionRemainingMinutes();
       const seconds = Math.floor(
-        (getCurrentSessionRemainingMinutes() * 60) % 60,
+        (getRemainingTime(state.currentPlannedEnd) / 1000) % 60,
       );
       return `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
     },
 
     getFormattedElapsedTime: () => {
       const minutes = getCurrentSessionElapsedMinutes();
-      const seconds = Math.floor((getCurrentSessionElapsedMinutes() * 60) % 60);
+      const seconds = Math.floor(
+        (getElapsedTime(state.currentWorkStart) / 1000) % 60,
+      );
       return `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
     },
   };
