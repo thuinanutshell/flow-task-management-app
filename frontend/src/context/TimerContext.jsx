@@ -32,12 +32,10 @@ const TimerStates = {
 const initialState = {
   activeTask: null,
   timerState: TimerStates.IDLE,
-  timeRemaining: 0,
-  elapsedTime: 0,
+  sessionDurationMinutes: 0,
+  startTimestamp: null, // When the timer actually started
+  plannedEndTimestamp: null, // When the timer should end
   totalTimeWorked: 0,
-  sessionDuration: 0,
-  currentWorkStart: null,
-  currentPlannedEnd: null,
   isExpired: false,
   showExpirationModal: false,
 };
@@ -54,36 +52,49 @@ const ActionTypes = {
   SYNC_WITH_BACKEND: "SYNC_WITH_BACKEND",
 };
 
+// Helper function to calculate elapsed time in seconds
+const calculateElapsedTime = (startTimestamp) => {
+  if (!startTimestamp) return 0;
+  return Math.floor((Date.now() - startTimestamp) / 1000);
+};
+
+// Helper function to calculate remaining time in seconds
+const calculateRemainingTime = (plannedEndTimestamp) => {
+  if (!plannedEndTimestamp) return 0;
+  return Math.max(0, Math.floor((plannedEndTimestamp - Date.now()) / 1000));
+};
+
 // Reducer function
 function timerReducer(state, action) {
   switch (action.type) {
     case ActionTypes.SET_ACTIVE_TIMER: {
+      const now = Date.now();
+      const plannedEndTimestamp =
+        now + action.payload.duration_minutes * 60 * 1000;
+
       return {
         ...state,
         activeTask: action.payload.task,
         timerState: TimerStates.ACTIVE,
-        sessionDuration: action.payload.duration_minutes,
-        timeRemaining: action.payload.duration_minutes * 60,
-        elapsedTime: 0,
-        totalTimeWorked: action.payload.total_time_worked,
-        currentWorkStart: action.payload.current_work_start,
-        currentPlannedEnd: action.payload.current_planned_end,
+        sessionDurationMinutes: action.payload.duration_minutes,
+        startTimestamp: now,
+        plannedEndTimestamp: plannedEndTimestamp,
+        totalTimeWorked: action.payload.total_time_worked || 0,
         isExpired: false,
         showExpirationModal: false,
       };
     }
 
     case ActionTypes.UPDATE_TIMER: {
-      if (state.timerState !== TimerStates.ACTIVE) return state;
+      if (state.timerState !== TimerStates.ACTIVE || !state.startTimestamp) {
+        return state;
+      }
 
-      const newElapsed = state.elapsedTime + 1;
-      const newRemaining = Math.max(0, state.timeRemaining - 1);
-      const willExpire = newRemaining === 0 && !state.isExpired;
+      const remaining = calculateRemainingTime(state.plannedEndTimestamp);
+      const willExpire = remaining === 0 && !state.isExpired;
 
       return {
         ...state,
-        elapsedTime: newElapsed,
-        timeRemaining: newRemaining,
         isExpired: willExpire,
         showExpirationModal: willExpire,
       };
@@ -93,8 +104,8 @@ function timerReducer(state, action) {
       return {
         ...state,
         timerState: TimerStates.PAUSED,
-        currentWorkStart: null,
-        currentPlannedEnd: null,
+        startTimestamp: null,
+        plannedEndTimestamp: null,
         isExpired: false,
         showExpirationModal: false,
       };
@@ -105,9 +116,8 @@ function timerReducer(state, action) {
         ...state,
         timerState: TimerStates.DONE,
         totalTimeWorked: action.payload.total_time_worked,
-        currentWorkStart: null,
-        currentPlannedEnd: null,
-        timeRemaining: 0,
+        startTimestamp: null,
+        plannedEndTimestamp: null,
         isExpired: false,
         showExpirationModal: false,
       };
@@ -116,12 +126,13 @@ function timerReducer(state, action) {
     case ActionTypes.EXTEND_TIMER: {
       return {
         ...state,
-        timeRemaining: action.payload.additionalMinutes * 60,
-        sessionDuration:
-          state.sessionDuration + action.payload.additionalMinutes,
+        plannedEndTimestamp:
+          state.plannedEndTimestamp +
+          action.payload.additionalMinutes * 60 * 1000,
+        sessionDurationMinutes:
+          state.sessionDurationMinutes + action.payload.additionalMinutes,
         isExpired: false,
         showExpirationModal: false,
-        currentPlannedEnd: action.payload.newPlannedEnd,
       };
     }
 
@@ -140,6 +151,32 @@ function timerReducer(state, action) {
 
     case ActionTypes.SYNC_WITH_BACKEND: {
       const backendData = action.payload;
+
+      // If the task is active, we need to sync with backend timestamps
+      if (
+        backendData.status === "active" &&
+        backendData.current_work_start &&
+        backendData.current_planned_end
+      ) {
+        const startTimestamp = new Date(
+          backendData.current_work_start,
+        ).getTime();
+        const plannedEndTimestamp = new Date(
+          backendData.current_planned_end,
+        ).getTime();
+
+        return {
+          ...state,
+          activeTask: backendData.task,
+          timerState: TimerStates.ACTIVE,
+          startTimestamp: startTimestamp,
+          plannedEndTimestamp: plannedEndTimestamp,
+          totalTimeWorked: backendData.total_time_worked || 0,
+          isExpired: backendData.is_expired || false,
+          showExpirationModal: backendData.is_expired || false,
+        };
+      }
+
       return {
         ...state,
         activeTask: backendData.task,
@@ -151,13 +188,7 @@ function timerReducer(state, action) {
               : backendData.status === "done"
                 ? TimerStates.DONE
                 : TimerStates.IDLE,
-        totalTimeWorked: backendData.total_time_worked,
-        timeRemaining: backendData.remaining_minutes
-          ? backendData.remaining_minutes * 60
-          : 0,
-        elapsedTime: backendData.elapsed_minutes
-          ? backendData.elapsed_minutes * 60
-          : 0,
+        totalTimeWorked: backendData.total_time_worked || 0,
         isExpired: backendData.is_expired || false,
       };
     }
@@ -174,16 +205,18 @@ const TimerContext = createContext();
 export const TimerProvider = ({ children }) => {
   const [state, dispatch] = useReducer(timerReducer, initialState);
 
+  // Update timer every second for active timers
   useEffect(() => {
     let interval = null;
-    if (state.timerState === TimerStates.ACTIVE && !state.isExpired) {
+    if (state.timerState === TimerStates.ACTIVE && state.startTimestamp) {
       interval = setInterval(() => {
         dispatch({ type: ActionTypes.UPDATE_TIMER });
       }, 1000);
     }
     return () => clearInterval(interval);
-  }, [state.timerState, state.isExpired]);
+  }, [state.timerState, state.startTimestamp]);
 
+  // Play sound when timer expires
   useEffect(() => {
     if (
       state.isExpired &&
@@ -203,7 +236,8 @@ export const TimerProvider = ({ children }) => {
         type: ActionTypes.SET_ACTIVE_TIMER,
         payload: {
           task,
-          ...response.data,
+          duration_minutes: duration,
+          total_time_worked: response.data.total_time_worked || 0,
         },
       });
 
@@ -225,8 +259,9 @@ export const TimerProvider = ({ children }) => {
   const pauseTimer = async () => {
     try {
       if (!state.activeTask) return;
-      if (state.timerState !== TimerStates.ACTIVE)
+      if (state.timerState !== TimerStates.ACTIVE) {
         throw new Error("No active timer to pause");
+      }
 
       const response = await taskService.pauseTimer(state.activeTask.id);
       dispatch({
@@ -234,9 +269,12 @@ export const TimerProvider = ({ children }) => {
         payload: response.data,
       });
 
+      const elapsedMinutes = Math.floor(
+        calculateElapsedTime(state.startTimestamp) / 60,
+      );
       notifications.show({
         title: "Timer Paused",
-        message: `Break time! You worked for ${Math.floor(state.elapsedTime / 60)} minutes`,
+        message: `Break time! You worked for ${elapsedMinutes} minutes`,
         color: "orange",
       });
     } catch (error) {
@@ -252,8 +290,9 @@ export const TimerProvider = ({ children }) => {
   const completeTask = async (mentalState, reflection) => {
     try {
       if (!state.activeTask) return;
-      if (state.timerState !== TimerStates.ACTIVE)
+      if (state.timerState !== TimerStates.ACTIVE) {
         throw new Error("No active timer to complete");
+      }
       if (!mentalState?.trim()) throw new Error("Mental state is required");
       if (!reflection?.trim()) throw new Error("Reflection is required");
 
@@ -295,7 +334,6 @@ export const TimerProvider = ({ children }) => {
         type: ActionTypes.EXTEND_TIMER,
         payload: {
           additionalMinutes,
-          newPlannedEnd: response.data.current_planned_end,
         },
       });
 
@@ -334,6 +372,7 @@ export const TimerProvider = ({ children }) => {
     }
   };
 
+  // Sync with backend periodically
   useEffect(() => {
     if (!state.activeTask || state.timerState !== TimerStates.ACTIVE) return;
 
@@ -354,13 +393,26 @@ export const TimerProvider = ({ children }) => {
     return () => clearInterval(interval);
   }, [state.activeTask, state.timerState, state.isExpired]);
 
+  // Calculate current values based on timestamps
+  const getTimeRemaining = () => {
+    if (!state.plannedEndTimestamp || state.timerState !== TimerStates.ACTIVE)
+      return 0;
+    return calculateRemainingTime(state.plannedEndTimestamp);
+  };
+
+  const getElapsedTime = () => {
+    if (!state.startTimestamp || state.timerState !== TimerStates.ACTIVE)
+      return 0;
+    return calculateElapsedTime(state.startTimestamp);
+  };
+
   const value = {
     activeTask: state.activeTask,
     timerState: state.timerState,
-    timeRemaining: state.timeRemaining,
-    elapsedTime: state.elapsedTime,
+    timeRemaining: getTimeRemaining(),
+    elapsedTime: getElapsedTime(),
     totalTimeWorked: state.totalTimeWorked,
-    sessionDuration: state.sessionDuration,
+    sessionDuration: state.sessionDurationMinutes,
     isExpired: state.isExpired,
     showExpirationModal: state.showExpirationModal,
     isTimerActive: state.timerState === TimerStates.ACTIVE,
@@ -372,13 +424,15 @@ export const TimerProvider = ({ children }) => {
     resetTimer,
     syncWithBackend,
     getFormattedTimeRemaining: () => {
-      const minutes = Math.floor(state.timeRemaining / 60);
-      const seconds = state.timeRemaining % 60;
+      const totalSeconds = getTimeRemaining();
+      const minutes = Math.floor(totalSeconds / 60);
+      const seconds = totalSeconds % 60;
       return `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
     },
     getFormattedElapsedTime: () => {
-      const minutes = Math.floor(state.elapsedTime / 60);
-      const seconds = state.elapsedTime % 60;
+      const totalSeconds = getElapsedTime();
+      const minutes = Math.floor(totalSeconds / 60);
+      const seconds = totalSeconds % 60;
       return `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
     },
   };
