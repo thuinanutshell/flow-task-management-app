@@ -6,104 +6,120 @@ import {
   Paper,
   ScrollArea,
   Stack,
-  Text
-} from '@mantine/core'
+  Text,
+} from "@mantine/core";
 import {
   IconDots,
   IconEdit,
+  IconEye,
   IconExternalLink,
   IconPlus,
   IconTrash,
-  IconX
-} from '@tabler/icons-react'
-import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { listService } from '../../services/lists'
-import TaskCardCompact from '../tasks/TaskCardCompact'
+  IconX,
+} from "@tabler/icons-react";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { listService } from "../../services/lists";
+import TaskCardCompact from "../tasks/TaskCardCompact";
 
-const ListCard = ({ 
-  list, 
+const ListCard = ({
+  list,
   onAddTask,
-  onEdit, 
+  onEdit,
   onDelete,
   onRemoveFromWorkspace,
   isWorkspaceList = false,
-  refreshTrigger
+  refreshTrigger,
 }) => {
-  const navigate = useNavigate()
-  const [tasks, setTasks] = useState([])
-  const [loading, setLoading] = useState(false)
-  
+  const navigate = useNavigate();
+  const [tasks, setTasks] = useState([]);
+  const [loading, setLoading] = useState(false);
+
   // Load tasks for this list
   useEffect(() => {
-    loadListTasks()
-  }, [list.id, refreshTrigger])
+    loadListTasks();
+  }, [list.id, refreshTrigger]);
 
   const loadListTasks = async () => {
     try {
-      setLoading(true)
-      const response = await listService.getListById(list.id)
-      setTasks(response.data.tasks || [])
+      setLoading(true);
+      const response = await listService.getListById(list.id);
+      setTasks(response.data.tasks || []);
     } catch (error) {
-      console.error('Failed to load tasks:', error)
-      setTasks([])
+      console.error("Failed to load tasks:", error);
+      setTasks([]);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
+  const handleCardClick = (e) => {
+    // Only navigate if not clicking on action buttons
+    if (!e.target.closest(".action-button")) {
+      navigate(`/lists/${list.id}/tasks`);
+    }
+  };
 
   const handleAddTask = (e) => {
-    e.stopPropagation()
+    e.stopPropagation();
     if (onAddTask) {
-      onAddTask(list)
+      onAddTask(list);
     }
-  }
+  };
 
-  const handleViewInProject = () => {
+  const handleViewDetails = (e) => {
+    e.stopPropagation();
+    navigate(`/lists/${list.id}/tasks`);
+  };
+
+  const handleViewInProject = (e) => {
+    e.stopPropagation();
     if (list.project_id || list.originalProjectId) {
-      const projectId = list.project_id || list.originalProjectId
-      navigate(`/projects/${projectId}`)
+      const projectId = list.project_id || list.originalProjectId;
+      navigate(`/projects/${projectId}`);
     }
-  }
+  };
 
   const handleEdit = () => {
     if (onEdit) {
-      onEdit(list)
+      onEdit(list);
     }
-  }
+  };
 
   const handleDelete = () => {
     if (onDelete) {
-      onDelete(list)
+      onDelete(list);
     }
-  }
+  };
 
   const handleRemoveFromWorkspace = () => {
     if (onRemoveFromWorkspace) {
-      onRemoveFromWorkspace(list)
+      onRemoveFromWorkspace(list);
     }
-  }
+  };
 
   return (
-    <Paper 
-      shadow="sm" 
-      radius="md" 
+    <Paper
+      shadow="sm"
+      radius="md"
       withBorder
       style={{
-        height: '600px',
-        display: 'flex',
-        flexDirection: 'column',
-        backgroundColor: '#f8f9fa',
-        border: '1px solid #dee2e6'
+        height: "600px",
+        display: "flex",
+        flexDirection: "column",
+        backgroundColor: "#f8f9fa",
+        border: "1px solid #dee2e6",
+        cursor: "pointer",
+        transition: "transform 0.2s ease, box-shadow 0.2s ease",
       }}
+      onClick={handleCardClick}
     >
       {/* List Header */}
-      <Group 
-        justify="space-between" 
-        align="center" 
+      <Group
+        justify="space-between"
+        align="center"
         p="md"
-        style={{ borderBottom: '1px solid #dee2e6' }}
+        style={{ borderBottom: "1px solid #dee2e6" }}
       >
         {/* List Name and Type Indicator */}
         <Stack spacing={4} style={{ flex: 1 }}>
@@ -116,49 +132,60 @@ const ListCard = ({
 
         {/* Action Buttons */}
         <Group spacing="xs">
-          <ActionIcon 
-            variant="subtle" 
+          <ActionIcon
+            variant="subtle"
             color="blue"
             onClick={handleAddTask}
             title="Add Task"
+            className="action-button"
           >
             <IconPlus size={16} />
           </ActionIcon>
-          
+
           <Menu shadow="md" width={200}>
             <Menu.Target>
-              <ActionIcon 
-                variant="subtle" 
+              <ActionIcon
+                variant="subtle"
                 color="gray"
+                className="action-button"
               >
                 <IconDots size={16} />
               </ActionIcon>
             </Menu.Target>
 
             <Menu.Dropdown>
+              {/* View Details */}
+              <Menu.Item
+                leftSection={<IconEye size={14} />}
+                onClick={handleViewDetails}
+              >
+                View All Tasks
+              </Menu.Item>
+
               {/* View in Project - Only for workspace lists */}
-              {isWorkspaceList && (list.project_id || list.originalProjectId) && (
-                <Menu.Item 
-                  leftSection={<IconExternalLink size={14} />}
-                  onClick={handleViewInProject}
-                >
-                  View in Project
-                </Menu.Item>
-              )}
-              
+              {isWorkspaceList &&
+                (list.project_id || list.originalProjectId) && (
+                  <Menu.Item
+                    leftSection={<IconExternalLink size={14} />}
+                    onClick={handleViewInProject}
+                  >
+                    View in Project
+                  </Menu.Item>
+                )}
+
               {/* Edit List - Only for created lists */}
               {!isWorkspaceList && onEdit && (
-                <Menu.Item 
+                <Menu.Item
                   leftSection={<IconEdit size={14} />}
                   onClick={handleEdit}
                 >
                   Edit List
                 </Menu.Item>
               )}
-              
+
               {/* Remove from Workspace - Only for workspace lists */}
               {isWorkspaceList && onRemoveFromWorkspace && (
-                <Menu.Item 
+                <Menu.Item
                   leftSection={<IconX size={14} />}
                   color="orange"
                   onClick={handleRemoveFromWorkspace}
@@ -166,10 +193,10 @@ const ListCard = ({
                   Remove from Workspace
                 </Menu.Item>
               )}
-              
+
               {/* Delete List - Only for created lists */}
               {!isWorkspaceList && onDelete && (
-                <Menu.Item 
+                <Menu.Item
                   leftSection={<IconTrash size={14} />}
                   color="red"
                   onClick={handleDelete}
@@ -193,10 +220,10 @@ const ListCard = ({
             <Box
               p="md"
               style={{
-                textAlign: 'center',
-                backgroundColor: 'white',
-                borderRadius: '8px',
-                border: '2px dashed #dee2e6'
+                textAlign: "center",
+                backgroundColor: "white",
+                borderRadius: "8px",
+                border: "2px dashed #dee2e6",
               }}
             >
               <Text size="sm" c="dimmed">
@@ -208,8 +235,8 @@ const ListCard = ({
             </Box>
           ) : (
             tasks.map((task) => (
-              <TaskCardCompact 
-                key={task.id} 
+              <TaskCardCompact
+                key={task.id}
                 task={task}
                 onUpdate={loadListTasks}
               />
@@ -218,7 +245,7 @@ const ListCard = ({
         </Stack>
       </ScrollArea>
     </Paper>
-  )
-}
+  );
+};
 
-export default ListCard
+export default ListCard;

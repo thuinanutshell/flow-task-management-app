@@ -1,4 +1,3 @@
-// features/categories/CategoryCard.jsx
 import {
   ActionIcon,
   Badge,
@@ -7,56 +6,73 @@ import {
   Group,
   Menu,
   Stack,
-  Text
-} from '@mantine/core'
+  Text,
+} from "@mantine/core";
 import {
   IconDots,
   IconEdit,
   IconEye,
   IconTag,
-  IconTrash
-} from '@tabler/icons-react'
+  IconTrash,
+} from "@tabler/icons-react";
+import { useNavigate } from "react-router-dom";
 
-const CategoryCard = ({ 
-  category, 
-  onEdit, 
-  onDelete, 
-  onView,
-  onClick 
-}) => {
+const CategoryCard = ({ category, onEdit, onDelete }) => {
+  const navigate = useNavigate();
 
   const handleCardClick = () => {
-    if (onClick) {
-      onClick(category)
+    // Navigate to category tasks page
+    navigate(`/categories/${category.id}/tasks`);
+  };
+
+  const handleViewTasks = (e) => {
+    e.stopPropagation();
+    navigate(`/categories/${category.id}/tasks`);
+  };
+
+  const handleEditCategory = (e) => {
+    e.stopPropagation();
+    if (onEdit) {
+      onEdit(category);
     }
-  }
+  };
+
+  const handleDeleteCategory = (e) => {
+    e.stopPropagation();
+    if (onDelete) {
+      onDelete(category);
+    }
+  };
 
   return (
-    <Card 
-      shadow="sm" 
-      padding="lg" 
-      radius="md" 
+    <Card
+      shadow="sm"
+      padding="lg"
+      radius="md"
       withBorder
-      style={{ cursor: onClick ? 'pointer' : 'default', height: '100%', display: 'flex', flexDirection: 'column'}}
+      style={{
+        cursor: "pointer",
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
+        transition: "transform 0.2s ease, box-shadow 0.2s ease",
+      }}
       onClick={handleCardClick}
     >
       <Stack spacing="sm">
         {/* Header */}
         <Group justify="space-between" align="flex-start">
           <Group spacing="sm" align="center">
-            <ColorSwatch 
-              color={category.color} 
-              size={24}
-            />
+            <ColorSwatch color={category.color} size={24} />
             <Text fw={500} size="md" lineClamp={2}>
               {category.name}
             </Text>
           </Group>
-          
+
           <Menu shadow="md" width={200}>
             <Menu.Target>
-              <ActionIcon 
-                variant="subtle" 
+              <ActionIcon
+                variant="subtle"
                 color="gray"
                 onClick={(e) => e.stopPropagation()}
               >
@@ -65,38 +81,27 @@ const CategoryCard = ({
             </Menu.Target>
 
             <Menu.Dropdown>
-              {onView && (
-                <Menu.Item 
-                  leftSection={<IconEye size={14} />}
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    onView(category)
-                  }}
-                >
-                  View Tasks
-                </Menu.Item>
-              )}
-              
+              <Menu.Item
+                leftSection={<IconEye size={14} />}
+                onClick={handleViewTasks}
+              >
+                View Tasks
+              </Menu.Item>
+
               {onEdit && (
-                <Menu.Item 
+                <Menu.Item
                   leftSection={<IconEdit size={14} />}
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    onEdit(category)
-                  }}
+                  onClick={handleEditCategory}
                 >
                   Edit Category
                 </Menu.Item>
               )}
-              
+
               {onDelete && (
-                <Menu.Item 
+                <Menu.Item
                   leftSection={<IconTrash size={14} />}
                   color="red"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    onDelete(category)
-                  }}
+                  onClick={handleDeleteCategory}
                 >
                   Delete Category
                 </Menu.Item>
@@ -116,7 +121,7 @@ const CategoryCard = ({
         </Group>
       </Stack>
     </Card>
-  )
-}
+  );
+};
 
-export default CategoryCard
+export default CategoryCard;

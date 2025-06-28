@@ -1,74 +1,81 @@
-import { Navigate, Route, BrowserRouter as Router, Routes } from 'react-router-dom'
-import { AuthProvider, useAuth } from './context/AuthContext'
+import {
+  Navigate,
+  Route,
+  BrowserRouter as Router,
+  Routes,
+} from "react-router-dom";
+import { AuthProvider, useAuth } from "./context/AuthContext";
 
 // Import your page components
-import Layout from './components/layout/Layout'
-import ProjectDetailView from './features/projects/ProjectDetailView'
-import Analytics from './pages/Analytics'
-import Calendar from './pages/Calendar'
-import Categories from './pages/Categories'
-import Dashboard from './pages/Dashboard'
-import Experiments from './pages/Experiments'
-import Login from './pages/Login'
-import Profile from './pages/Profile'
-import Projects from './pages/Projects'
+import Layout from "./components/layout/Layout";
+import ProjectDetailView from "./features/projects/ProjectDetailView";
+import Analytics from "./pages/Analytics";
+import Calendar from "./pages/Calendar";
+import Categories from "./pages/Categories";
+import CategoryTasks from "./pages/CategoryTasks";
+import Dashboard from "./pages/Dashboard";
+import Experiments from "./pages/Experiments";
+import ListTasks from "./pages/ListTasks";
+import Login from "./pages/Login";
+import Profile from "./pages/Profile";
+import Projects from "./pages/Projects";
 
 // Protected Route component
 const ProtectedRoute = ({ children }) => {
-  const { isAuthenticated, isLoading } = useAuth()
-  
+  const { isAuthenticated, isLoading } = useAuth();
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
       </div>
-    )
+    );
   }
-  
-  return isAuthenticated ? children : <Navigate to="/login" replace />
-}
+
+  return isAuthenticated ? children : <Navigate to="/login" replace />;
+};
 
 // Public Route component (redirect if already logged in)
 const PublicRoute = ({ children }) => {
-  const { isAuthenticated, isLoading } = useAuth()
-  
+  const { isAuthenticated, isLoading } = useAuth();
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
       </div>
-    )
+    );
   }
-  
-  return !isAuthenticated ? children : <Navigate to="/dashboard" replace />
-}
+
+  return !isAuthenticated ? children : <Navigate to="/dashboard" replace />;
+};
 
 function AppRoutes() {
   return (
     <Router>
       <Routes>
         {/* Public routes */}
-        <Route 
-          path="/login" 
+        <Route
+          path="/login"
           element={
             <PublicRoute>
               <Login />
             </PublicRoute>
-          } 
+          }
         />
-        
+
         {/* Protected routes */}
-        <Route 
-          path="/dashboard" 
+        <Route
+          path="/dashboard"
           element={
             <ProtectedRoute>
               <Layout>
                 <Dashboard />
               </Layout>
             </ProtectedRoute>
-          } 
+          }
         />
-        
+
         <Route
           path="/projects"
           element={
@@ -102,6 +109,30 @@ function AppRoutes() {
           }
         />
 
+        {/* New Category Tasks Route */}
+        <Route
+          path="/categories/:categoryId/tasks"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <CategoryTasks />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+
+        {/* New List Tasks Route */}
+        <Route
+          path="/lists/:listId/tasks"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <ListTasks />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+
         <Route
           path="/calendar"
           element={
@@ -112,48 +143,48 @@ function AppRoutes() {
             </ProtectedRoute>
           }
         />
-        
-        <Route 
-          path="/analytics" 
+
+        <Route
+          path="/analytics"
           element={
             <ProtectedRoute>
               <Layout>
                 <Analytics />
               </Layout>
             </ProtectedRoute>
-          } 
+          }
         />
-        
-        <Route 
-          path="/experiments" 
+
+        <Route
+          path="/experiments"
           element={
             <ProtectedRoute>
               <Layout>
                 <Experiments />
               </Layout>
             </ProtectedRoute>
-          } 
+          }
         />
-        
-        <Route 
-          path="/profile" 
+
+        <Route
+          path="/profile"
           element={
             <ProtectedRoute>
               <Layout>
                 <Profile />
               </Layout>
             </ProtectedRoute>
-          } 
+          }
         />
-        
+
         {/* Default redirect */}
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
-        
+
         {/* Catch all route - redirect to dashboard */}
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>
     </Router>
-  )
+  );
 }
 
 function App() {
@@ -161,7 +192,7 @@ function App() {
     <AuthProvider>
       <AppRoutes />
     </AuthProvider>
-  )
+  );
 }
 
-export default App
+export default App;
