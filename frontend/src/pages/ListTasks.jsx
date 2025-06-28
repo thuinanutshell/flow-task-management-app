@@ -7,7 +7,6 @@ import {
   Grid,
   Group,
   Loader,
-  Progress,
   Stack,
   Text,
   Title,
@@ -77,7 +76,7 @@ const ListTasks = () => {
   const handleDeleteList = async () => {
     if (!listDetail) return;
 
-    const taskCount = listDetail.total_tasks || 0;
+    const taskCount = listDetail.tasks?.length || 0;
     const confirmMessage =
       taskCount > 0
         ? `The list "${listDetail.name}" has ${taskCount} task(s). Are you sure you want to delete it? This will also delete all tasks in this list.`
@@ -117,31 +116,9 @@ const ListTasks = () => {
     }
   };
 
-  // Format date
-  const formatDate = (dateString) => {
-    if (!dateString) return "Not set";
-    return new Date(dateString).toLocaleDateString();
-  };
-
   // Calculate task count
   const getTaskCount = () => {
     return listDetail?.tasks?.length || 0;
-  };
-
-  // Get status color for project status
-  const getStatusColor = (status) => {
-    switch (status) {
-      case "not_started":
-        return "gray";
-      case "in_progress":
-        return "blue";
-      case "pending":
-        return "orange";
-      case "done":
-        return "green";
-      default:
-        return "gray";
-    }
   };
 
   if (loading) {
@@ -246,32 +223,6 @@ const ListTasks = () => {
             </ActionIcon>
           </Group>
         </Group>
-
-        {/* List Stats */}
-        <Card withBorder p="md">
-          <Group justify="space-between" align="center">
-            <Group spacing="sm">
-              <IconList size={20} color="#228be6" />
-              <Text fw={500}>{taskCount} tasks</Text>
-              {listDetail.project_id && (
-                <Group spacing="xs">
-                  <Text c="dimmed">•</Text>
-                  <Text size="sm" c="dimmed">
-                    From {listDetail.project?.name || "Project"}
-                  </Text>
-                </Group>
-              )}
-            </Group>
-
-            <Progress
-              value={(listDetail.progress || 0) * 100}
-              color="blue"
-              size="md"
-              radius="sm"
-              style={{ width: "200px" }}
-            />
-          </Group>
-        </Card>
 
         {/* Tasks Section */}
         <div>

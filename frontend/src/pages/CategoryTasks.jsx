@@ -1,6 +1,7 @@
 import {
   ActionIcon,
   Alert,
+  Button,
   Card,
   ColorSwatch,
   Container,
@@ -94,12 +95,6 @@ const CategoryTasks = () => {
 
   const handleTaskUpdate = () => {
     setRefreshTrigger((prev) => prev + 1);
-  };
-
-  // Format date
-  const formatDate = (dateString) => {
-    if (!dateString) return "Not set";
-    return new Date(dateString).toLocaleDateString();
   };
 
   // Calculate task count

@@ -53,13 +53,6 @@ const ListCard = ({
     }
   };
 
-  const handleCardClick = (e) => {
-    // Only navigate if not clicking on action buttons
-    if (!e.target.closest(".action-button")) {
-      navigate(`/lists/${list.id}/tasks`);
-    }
-  };
-
   const handleAddTask = (e) => {
     e.stopPropagation();
     if (onAddTask) {
@@ -109,10 +102,8 @@ const ListCard = ({
         flexDirection: "column",
         backgroundColor: "#f8f9fa",
         border: "1px solid #dee2e6",
-        cursor: "pointer",
-        transition: "transform 0.2s ease, box-shadow 0.2s ease",
+        // Removed cursor pointer and onClick from here
       }}
-      onClick={handleCardClick}
     >
       {/* List Header */}
       <Group
