@@ -22,6 +22,28 @@ def serialize_category(category):
     }
 
 
+def serialize_task(task):
+    """Helper function to serialize task objects for category tasks endpoint"""
+    return {
+        "id": task.id,
+        "name": task.name,
+        "description": task.description,
+        "status": task.status.value,
+        "priority": task.priority.value,
+        "planned_duration": task.planned_duration,
+        "total_time_worked": task.total_time_worked,
+        "first_started_at": (
+            task.first_started_at.isoformat() if task.first_started_at else None
+        ),
+        "completed_at": (task.completed_at.isoformat() if task.completed_at else None),
+        "mental_state": task.mental_state.value if task.mental_state else None,
+        "reflection": task.reflection,
+        "list_id": task.list_id,
+        "category_id": task.category_id,
+        "is_timer_active": task.is_timer_active,
+    }
+
+
 @category_bp.route("/", methods=["POST"])
 @jwt_required()
 def create_category():
@@ -220,14 +242,20 @@ def get_category_tasks(category_id):
         if not category:
             return create_response(False, "Category not found", status=404)
 
-        # Import here to avoid circular imports
-        from app.routes.tasks import serialize_task
-
+        # Serialize tasks using the local serialize_task function
         tasks_data = [serialize_task(task) for task in category.tasks]
 
         return create_response(
             message=f"Retrieved tasks for category '{category.name}' successfully",
-            data={"category": serialize_category(category), "tasks": tasks_data},
+            data={
+                "id": category.id,
+                "name": category.name,
+                "color": category.color,
+                "task_count": len(tasks_data),
+                "tasks": tasks_data,
+                "created_at": category.created_at.isoformat() if category.created_at else None,
+                "updated_at": category.updated_at.isoformat() if category.updated_at else None,
+            },
         )
 
     except Exception as e:
